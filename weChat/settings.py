@@ -26,7 +26,8 @@ SECRET_KEY = 'django-insecure-d8&g6qf2=6rxgx%1wj@18mt0jxcp8r$=%pd1$^dw)ino*64*)0
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["wechat-91rc.onrender.com", "127.0.0.1", "localhost"]
 
 
 # Application definition
