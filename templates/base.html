@@ -1,0 +1,25 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <title>Document</title>
+  </head>
+  <body>
+    {% if user.is_authenticated %}
+    <a href="{% url 'logout_view' %}">Logout</a>
+    {% for user in users %}
+    <p>
+        <a href="{% url 'chat_room' user.username %}">{{user.username}}</a>
+    </p>
+    {% endfor %}
+    {% else %}
+    <a href="{% url 'signUp_view' %}">Sign Up</a>
+    <a href="{% url 'login_view' %}">Login</a>
+    {% endif %}
+
+    {% block content %}{% endblock %}
+  </body>
+</html>
