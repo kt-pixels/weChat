@@ -8,6 +8,10 @@ urlpatterns = [
     path('logout/', views.logout_view, name="logout_view"),
 
     # 
+    path('edit-profile/', views.edit_user_profile, name='edit_user_profile'),
+
+    # 
     path('chat/<str:username>/', views.chat_room, name='chat_room'),
     path('messages/<str:username>/', views.message_fetching_view, name='messages_fetching'),
+    path("delete-message/<int:message_id>/", views.delete_message, name="delete-message"),
 ]
