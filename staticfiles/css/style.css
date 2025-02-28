@@ -1,0 +1,81 @@
+#chatBox {
+  padding: 10px;
+  background: #f5f5f5;
+  overflow-y: auto;
+}
+
+.message {
+  padding: 8px 12px;
+  margin: 5px 0;
+  border-radius: 10px;
+  max-width: 70%;
+  word-wrap: break-word;
+}
+
+.message > p {
+  margin: 0;
+}
+
+.sent {
+  background: #dcf8c6; /* WhatsApp Green */
+  color: #000;
+  align-self: flex-end;
+  text-align: right;
+  margin-left: auto;
+  border-top-right-radius: 0;
+}
+
+.received {
+  background: #ffffff;
+  color: #000;
+  align-self: flex-start;
+  text-align: left;
+  margin-right: auto;
+  border-top-left-radius: 0;
+}
+
+#chatBox {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  position: absolute; /* Fixed ko hata diya */
+  top: 50px; /* Header height ke hisaab se adjust karein */
+  left: 0;
+  right: 0;
+  bottom: 60px; /* Chat input form ke height ka space */
+  padding: 10px;
+  background: #f5f5f5;
+}
+
+.timestamp {
+  font-size: 10px;
+  color: #777;
+  display: block;
+  text-align: right;
+  margin-top: 5px;
+}
+
+#ChatForm {
+  padding: 10px;
+  background-color: white;
+  display: flex;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+}
+
+#ChatForm > input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px 0px 0px 10px;
+  border: none;
+  background-color: whitesmoke;
+}
+#ChatForm > button {
+  border-radius: 0px 10px 10px 0px;
+  border: none;
+  background-color: rgb(0, 161, 8);
+  color: white;
+}
