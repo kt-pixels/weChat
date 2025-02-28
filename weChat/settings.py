@@ -24,9 +24,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-d8&g6qf2=6rxgx%1wj@18mt0jxcp8r$=%pd1$^dw)ino*64*)0'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["wechat-91rc.onrender.com", "localhost", "127.0.0.1"]
+
 
 
 # Application definition
