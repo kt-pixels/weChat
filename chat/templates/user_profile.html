@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="home-left">
+    <div class="profile">
+      <span class="material-symbols-outlined">
+          dashboard
+      </span>
+    </div>
+    <hr class="hr">
+
+    <div class="explore">                     
+        <a href="{% url 'edit_user_profile' %}">
+          <span class="material-symbols-outlined">
+              account_circle
+          </span>
+        </a>
+        <a href="{% url 'edit_user_profile' %}">
+          <span class="material-symbols-outlined">
+              bookmark
+          </span>
+        </a>
+        <a href="{% url 'edit_user_profile' %}">
+          <span class="material-symbols-outlined">
+              settings
+          </span>
+        </a>
+
+        {% if user.is_authenticated %}
+        <a href="{% url 'logout_view' %}">
+          <span class="material-symbols-outlined">
+              logout
+          </span>
+        </a>
+        {% else %}
+        <a href="{% url 'signUp_view' %}">
+          <span class="material-symbols-outlined">
+              fingerprint
+          </span>
+        </a>
+        <a href="{% url 'login_view' %}">
+          <span class="material-symbols-outlined">
+              login
+          </span>
+        </a>
+        {% endif %}
+
+        <div class="side_icons">
+
+        </div>
+    </div>
+    
+</div>
+
+<div class="profile_container" style="
+margin-inline-start: 7%;
+overflow: hidden;
+position: relative;
+top: 100px;
+background-color: white;
+padding: 20px;
+width: 91vw;
+box-shadow: 0 0 5px gray;
+">
+
+<div class="user_details_div" style="
+display: flex;
+align-items: center;
+">
+    <div class="user_profile_image" style="background-image: url({% if user.customuser.profile_img %}{{ user.customuser.profile_img.url }}{% else %}{% endif %}); width: 70px; height: 70px;"></div>
+    <div class="users_info">
+        <p>{{user.first_name}} {{user.last_name}}</p>
+        <p>{{user.username}}</p>
+    </div>
+</div>
+
+{% comment %} <div class="editing">
+    <a href="{% url 'edit_user_profile' %}" class="tab-btn">Edit Profile</a>
+</div> {% endcomment %}
+
+<div class="tabs">
+    <button class="tab-btn active" data-type="photo" onclick="filterPosts('photo')">Photos</button>
+    <button class="tab-btn" data-type="video" onclick="filterPosts('video')">Videos</button>
+</div>
+
+<div id="media-content">
+    {% for post in posts %}
+        <div class="post {% if post.image %}photo-post{% elif post.video %}video-post{% endif %}"
+             onclick="openModal(
+                 {% if post.image %}'{{ post.image.url }}'{% elif post.video %}{% if post.video %}'{{ post.video.url }}'{% else %}''{% endif %}{% endif %}, 
+                 {% if post.image %}'image'{% else %}'video'{% endif %})">
+            
+            {% if post.image %}
+                <div class="photoes_posts">
+                    <img src="{{ post.image.url }}" alt="images_Post">
+                </div>
+            {% elif post.video %}
+                <div class="videos_posts">
+                    {% if post.video %}
+                        <video controls>
+                            <source src="{{ post.video.url }}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    {% empty %}
+        <p>No posts available.</p>
+    {% endfor %}
+</div>
+
+
+
+<!-- Modal Structure -->
+<div id="postModal" class="modal" style="display: none;">
+    <span class="close" onclick="closeModal()">&times;</span>
+    <div class="modal-content">
+        <div id="modal-media"></div>
+    </div>
+</div>
+
+</div>
+
+
+
+{% endblock %}
+
+{% block scripting %}
+<script>
+    function filterPosts(type) {
+        let photoPosts = document.querySelectorAll('.photo-post');
+        let videoPosts = document.querySelectorAll('.video-post');
+        let buttons = document.querySelectorAll('.tab-btn');
+
+        // Sabhi buttons se 'active' class hatao
+        buttons.forEach(btn => btn.classList.remove('active'));
+
+        // Jo button click hua use 'active' class do
+        document.querySelector(`[data-type="${type}"]`).classList.add('active');
+
+        if (type === 'photo') {
+            // Photo posts dikhana & video posts hide karna
+            photoPosts.forEach(post => post.style.display = 'block');
+            videoPosts.forEach(post => post.style.display = 'none');
+        } else if (type === 'video') {
+            // Video posts dikhana & photo posts hide karna
+            photoPosts.forEach(post => post.style.display = 'none');
+            videoPosts.forEach(post => post.style.display = 'block');
+        }
+    }
+
+    // Page load hone par default 'Photos' dikhaye
+    document.addEventListener("DOMContentLoaded", function () {
+        filterPosts('photo');
+    });
+</script>
+
+<script>
+    function openModal(mediaUrl, type) {
+        let modal = document.getElementById("postModal");
+        let modalContent = document.getElementById("modal-media");
+
+        // Remove previous content
+        modalContent.innerHTML = "";
+
+        // Agar post ek image hai toh image dikhaye, nahi toh video
+        if (type === "image") {
+            let img = document.createElement("img");
+            img.src = mediaUrl;
+            modalContent.appendChild(img);
+        } else if (type === "video") {
+            let video = document.createElement("video");
+            video.src = mediaUrl;
+            video.controls = true;
+            modalContent.appendChild(video);
+        }
+
+        // Show modal
+        modal.style.display = "flex";
+    }
+
+    function closeModal() {
+        document.getElementById("postModal").style.display = "none";
+    }
+
+    // Close modal when user clicks outside the content
+    window.onclick = function(event) {
+        let modal = document.getElementById("postModal");
+        if (event.target === modal) {
+            closeModal();
+        }
+    }
+
+    // Close modal when user presses Escape key
+    document.addEventListener("keydown", function(event) {
+        if (event.key === "Escape") {
+            closeModal();
+        }
+    });
+</script>
+
+
+{% endblock %}

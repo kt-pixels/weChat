@@ -1,3 +1,206 @@
 {% extends "base.html" %}
 
-{% block content %}{% endblock %}
+{% block content %}
+<div class="home-left">
+    <div class="profile">
+      <span class="material-symbols-outlined">
+          dashboard
+      </span>
+    </div>
+    <hr class="hr">
+
+    <div class="explore">                     
+        <a href="{% url 'edit_user_profile' %}">
+          <span class="material-symbols-outlined">
+              account_circle
+          </span>
+        </a>
+        <a href="{% url 'edit_user_profile' %}">
+          <span class="material-symbols-outlined">
+              bookmark
+          </span>
+        </a>
+        <a href="{% url 'edit_user_profile' %}">
+          <span class="material-symbols-outlined">
+              settings
+          </span>
+        </a>
+
+        {% if user.is_authenticated %}
+        <a href="{% url 'logout_view' %}">
+          <span class="material-symbols-outlined">
+              logout
+          </span>
+        </a>
+        {% else %}
+        <a href="{% url 'signUp_view' %}">
+          <span class="material-symbols-outlined">
+              fingerprint
+          </span>
+        </a>
+        <a href="{% url 'login_view' %}">
+          <span class="material-symbols-outlined">
+              login
+          </span>
+        </a>
+        {% endif %}
+
+        <div class="side_icons">
+
+        </div>
+    </div>
+    
+</div>
+
+
+<div class="profile_editing_form" style="
+margin-inline-start: 7%;
+overflow: hidden;
+position: relative;
+top: 100px;
+background-color: white;
+padding: 20px;
+width: 90vw;
+box-shadow: 0 0 5px gray;
+">
+    <div class="form_container">
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+        
+            <div style="
+            display: flex;
+            flex-direction: column;
+            ">
+                <div class="pro_image_container">
+                    <input type="file" name="profile_img" id="profile_img_input" accept="image/*" style="display: none;">
+                    <div id="profile_preview" style="background-image: url({% if custom_user.profile_img %}{{ custom_user.profile_img.url }}{% else %}{% endif %});">
+                        <button type="button" id="open_file_input">Upload Image</button>
+                    </div>
+                </div>
+
+                <div class="cov_image_container" id="cov_image_container">
+                    <input type="file" name="cover_img" id="cover_img_input" accept="image/*" style="display: none;">
+                    <div id="cover_img_preview" style="background-image: url(
+                        {% if custom_user.cover_img %}{{ custom_user.cover_img.url }}{% else %}{% endif %}
+                     );">
+                    </div>
+                </div>
+                
+                <div class="inputs_conttainer">
+                    <div>
+                        <label>First Name:</label>
+                        <input type="text" name="firstname" value="{{ request.user.first_name }}">
+                    </div>
+                    <div>
+                        <label>Last Name:</label>
+                        <input type="text" name="lastname" value="{{ request.user.last_name }}">
+                    </div>
+                </div>
+                <div class="inputs_conttainer">
+                    <div>
+                        <label>Username:</label>
+                        <input type="text" name="username" value="{{ request.user.username }}">
+                    </div>
+                    <div>
+                        <label>Email:</label>
+                        <input type="email" name="email" value="{{ request.user.email }}">
+                    </div>
+                    <div>
+                        <label>Phone:</label>
+                        <input type="text" name="phone_number" value="{{ custom_user.phone|default_if_none:'' }}">
+                    </div>
+                </div>
+
+                <div class="bio_textbox">
+                    <label>Bio:</label>
+                    <textarea name="bio">{{ custom_user.bio }}</textarea>
+                </div>
+                <div class="inputs_conttainer">
+                    <div>
+                        <label>Gender:</label>
+                        <select name="gender">
+                            <option value="male" {% if custom_user.gender == "male" %}selected{% endif %}>Male</option>
+                            <option value="female" {% if custom_user.gender == "female" %}selected{% endif %}>Female</option>
+                            <option value="other" {% if custom_user.gender == "other" %}selected{% endif %}>Other</option>
+                        </select>
+                    </div>
+                
+                    <div>
+                        <label>Date of Birth:</label>
+                        <input type="date" name="date_of_birth" value="{{ custom_user.date_of_birth|date:'Y-m-d' }}">
+                    </div>
+                    <div>
+                        <label>Address:</label>
+                        <textarea name="address">{{ custom_user.address }}</textarea>
+                    </div>
+                </div>
+                <div class="inputs_conttainer">
+                    <div>
+                        <label>Facebook Link:</label>
+                        <input type="url" name="facebook_link" value="{{ custom_user.facebook_link|default_if_none:'' }}">
+                    </div>
+                    <div>
+                        <label>Instagram Link:</label>
+                        <input type="url" name="instagram_link" value="{{ custom_user.instagram_link|default_if_none:'' }}">
+                    </div>
+                </div>
+                <div class="inputs_conttainer">
+                    <div>
+                        <label>Twitter Link:</label>
+                        <input type="url" name="twitter_link" value="{{ custom_user.twitter_link|default_if_none:'' }}">
+                    </div>
+                    <div>
+                        <label>LinkedIn Link:</label>
+                        <input type="url" name="linkedin_link" value="{{ custom_user.linkedin_link|default_if_none:'' }}">
+                    </div>
+                </div>
+            </div>
+            <button type="submit">Update Profile</button>
+        </form>        
+    </div>
+</div>
+{% endblock %}
+
+{% block scripting %}
+<script>
+    document.getElementById('open_file_input').addEventListener('click', function () {
+        document.getElementById('profile_img_input').click()
+    })
+
+    document.getElementById('profile_img_input').addEventListener('change', function (e){
+        const file = event.target.files[0]
+
+        if(file){
+            const reader = new FileReader()
+            reader.onload = function(e){
+                const preview = document.getElementById('profile_preview')
+                let src = e.target.result;
+                preview.style.backgroundImage = `url(${src})`
+                preview.style.display = 'block'
+            }
+            reader.readAsDataURL(file);
+        }
+    })
+
+
+    document.getElementById('cov_image_container').addEventListener('click', function () {
+        document.getElementById('cover_img_input').click()
+    })
+
+    document.getElementById('cover_img_input').addEventListener('change', function (e){
+        const file = event.target.files[0]
+
+        if(file){
+            const reader = new FileReader()
+            reader.onload = function(e){
+                const preview = document.getElementById('cover_img_preview')
+                let src = e.target.result;
+                preview.style.backgroundImage = `url(${src})`
+                preview.style.display = 'block'
+            }
+            reader.readAsDataURL(file);
+        }
+    })
+</script>
+    
+{% endblock %}

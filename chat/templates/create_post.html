@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Post</title>
+    <style>
+        .preview-container {
+            margin-top: 15px;
+            max-width: 300px;
+        }
+        .preview-container img, 
+        .preview-container video {
+            width: 100%;
+            border-radius: 8px;
+            display: none; /* Initially hidden */
+        }
+    </style>
+</head>
+<body>
+    <h1>Create Post</h1>
+    <div class="post_form_container">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form.as_p }}
+            
+            <!-- Preview Section -->
+            <div class="preview-container">
+                <img id="imagePreview" src="#" alt="Image Preview">
+                <video id="videoPreview" controls></video>
+            </div>
+
+            <button type="submit">Upload</button>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            let imageInput = document.querySelector("input[name='image']");
+            let videoInput = document.querySelector("input[name='video']");
+            let imagePreview = document.getElementById("imagePreview");
+            let videoPreview = document.getElementById("videoPreview");
+
+            function showPreview(input, previewElement, isImage) {
+                if (input.files && input.files[0]) {
+                    let reader = new FileReader();
+                    reader.onload = function (e) {
+                        previewElement.src = e.target.result;
+                        previewElement.style.display = "block";
+                    };
+                    reader.readAsDataURL(input.files[0]);
+                } else {
+                    previewElement.style.display = "none";
+                }
+            }
+
+            // Image Preview
+            imageInput.addEventListener("change", function () {
+                showPreview(this, imagePreview, true);
+                videoPreview.style.display = "none"; // Hide video preview
+            });
+
+            // Video Preview
+            videoInput.addEventListener("change", function () {
+                showPreview(this, videoPreview, false);
+                imagePreview.style.display = "none"; // Hide image preview
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Stories</title>
+    <style>
+        .story-container {
+            width: 100%;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .story-box {
+            width: 400px;
+            height: 700px;
+            background: black;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+        .story-image, .story-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+        .active {
+            display: block !important;
+        }
+        .next-btn {
+            position: absolute;
+            top: 50%;
+            right: 10px;
+            background: rgba(255,255,255,0.5);
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="story-container">
+        <div class="story-box">
+            {% for story in stories %}
+                {% if story.image %}
+                    <img class="story-image" src="{{ story.image.url }}" alt="Story">
+                {% elif story.video %}
+                    <video class="story-video" autoplay>
+                        <source src="{{ story.video.url }}" type="video/mp4">
+                    </video>
+                {% endif %}
+            {% endfor %}
+            <button class="next-btn">Next</button>
+        </div>
+    </div>
+
+    <script>
+        let stories = document.querySelectorAll('.story-image, .story-video');
+        let index = 0;
+        
+        function showStory(i) {
+            stories.forEach(story => story.classList.remove('active'));
+            if (stories[i]) {
+                stories[i].classList.add('active');
+            }
+        }
+        
+        document.querySelector('.next-btn').addEventListener('click', () => {
+            index++;
+            if (index >= stories.length) {
+                window.history.back(); // Last story ke baad wapas home page
+            } else {
+                showStory(index);
+            }
+        });
+
+        showStory(0);
+    </script>
+</body>
+</html>

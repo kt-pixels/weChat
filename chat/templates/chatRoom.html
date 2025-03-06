@@ -7,22 +7,47 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="{% static 'css/style.css' %}" />
     <title>Chat room</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
+    <style>
+      .background_image{
+        position: fixed;
+        top: 0;
+        right: 0;
+        left: 0;
+        bottom: 0;
+      }
+      .background_image > img{
+        width: 100%;
+      }
+    </style>
   </head>
   <body>
+    <div class="background_image">
+      <img src="/media/chat_theme.jpg" alt="">
+    </div>
     <h2
       style="
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        backdrop-filter: blur(20px);
         position: fixed;
         margin: 0;
-        background: black;
+        background: #7e7e7e38;
         color: white;
         padding: 10px;
         left: 0;
         top: 0;
         right: 0;
         z-index: 10;
+        font-size: 20px;
+        text-transform: capitalize;
       "
     >
-      Chat with {{receiver.username}}
+    <span class="material-symbols-outlined">
+      keyboard_return
+      </span>
+      {{receiver.first_name}} {{receiver.last_name}}
     </h2>
 
     <div id="chatBox">
@@ -70,7 +95,11 @@
         name="message"
         required
       />
-      <button type="submit">Send</button>
+      <button type="submit">
+        <span class="material-symbols-outlined">
+          send
+          </span>
+      </button>
     </form>
 
     <script>

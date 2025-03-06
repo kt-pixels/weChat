@@ -1,8 +1,23 @@
 from django.contrib import admin
-from .models import ChatRoom, Message
+from .models import ChatRoom, Message, CustomUser, Post, Story
+from django.contrib.auth.models import User
 
 # Register your models here.
 
+# CUSTOME USER INCLUDE START
+class CustomUserInline(admin.StackedInline):
+    model = CustomUser
+    can_delete = False
+
+class CustomUserAdmin(admin.ModelAdmin):
+    inlines = [CustomUserInline]
+
+admin.site.unregister(User)
+admin.site.register(User, CustomUserAdmin)
+# CUSTOME USER INCLUDE END
+
+
+# MESSAGE MODEL ADD WITH CHATROOM START
 class MessageInline(admin.TabularInline):
     model = Message
     readonly_fields = ('sender', 'text', 'timestamp')
@@ -14,3 +29,7 @@ class ChatRoomAdmin(admin.ModelAdmin):
     inlines = [MessageInline]
 
 admin.site.register(ChatRoom, ChatRoomAdmin)
+# MESSAGE MODEL ADD WITH CHATROOM END
+
+admin.site.register(Post)
+admin.site.register(Story)

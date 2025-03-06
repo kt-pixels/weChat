@@ -1,12 +1,260 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
+    />
+    <title>weChat || Login</title>
+    <style>
+      body {
+        background-color: #d1deec;
+        background-image: url("/media/background1.png");
+        background-attachment: fixed;
+        background-size: cover;
+        background-position: center center;
+        background-repeat: no-repeat;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
 
-{% block content %}
-<h2>Login</h2>
-<form method="post">
-    {% csrf_token %}
-    <input type="text" name="username" placeholder="Username..." required>
-    <input type="password" name="password" placeholder="Password..." required>
-    <button type="submit">Login</button>
-</form>
+      h2 {
+        color: white;
+        text-align: center;
+      }
 
-{% endblock %}
+      form {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        background-color: #ffffff00;
+        backdrop-filter: blur(30px);
+        width: 300px;
+        padding: 20px;
+        position: relative;
+        overflow: hidden;
+        border-radius: 10px;
+        border: 2px solid white;
+      }
+      form > div > input {
+        padding: 10px;
+        border: none;
+        background-color: transparent;
+        color: white;
+        width: 100%;
+      }
+      form > div {
+        padding: 2px;
+        border-radius: 5px;
+        border: 1px solid white;
+        background-color: transparent;
+        color: white;
+        display: flex;
+        align-items: center;
+        padding-inline-end: 10px;
+      }
+      form > div > input::placeholder {
+        color: white;
+      }
+
+      form > div > input:focus {
+        outline: none;
+      }
+      form > button {
+        border: 1px solid white;
+        border-radius: 10px;
+        padding: 5px;
+        font-size: 18px;
+        background-color: transparent;
+        color: white;
+        transition: all 0.2s linear;
+        cursor: pointer;
+      }
+      form > button:hover {
+        background-color: #ffffff29;
+      }
+      form > .close_btn {
+        font-size: 33px;
+        background-color: #ffffff29;
+        color: white;
+        position: absolute;
+        padding-block: 0px;
+        padding-inline: 8px;
+        padding-inline-start: 6px;
+        border-radius: 0 0 0 20px;
+        top: 0;
+        right: 0;
+        cursor: pointer;
+        border-left: 2px solid white;
+        border-bottom: 2px solid white;
+      }
+      p,
+      a {
+        text-decoration: none;
+        color: white;
+      }
+      .chat_logo {
+        position: absolute;
+        display: block;
+        border: none;
+        padding: 0;
+      }
+      .chat_logo > img {
+        width: 65px;
+      }
+
+      .toaster {
+        position: absolute;
+        display: block;
+        background-color: #ffffff3b;
+        padding: 7px;
+        border: 2px solid white;
+        backdrop-filter: blur(20px);
+        width: 299px;
+        border-radius: 10px;
+        color: black;
+        text-align: center;
+        font-size: 18px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+        animation: toaster 0.4s 4;
+      }
+      .toaster > i {
+        font-size: 5rem;
+        color: #d70d0d;
+      }
+      .toaster > p {
+        color: #d70d0d;
+        font-size: 22px;
+      }
+
+      @keyframes toaster {
+        0% {
+          opacity: 1;
+        }
+        25% {
+          opacity: 0.1;
+        }
+        50% {
+          opacity: 1;
+        }
+        75% {
+          opacity: 0.1;
+        }
+        100% {
+          opacity: 1;
+        }
+      }
+
+      @media only screen and (max-width: 800px) {
+        form {
+          position: absolute;
+          top: 5rem;
+          left: 1rem;
+          right: 1rem;
+          bottom: 1rem;
+          width: 90%;
+        }
+      }
+
+      @media only screen and (max-width: 700px) {
+        form {
+          width: 89%;
+        }
+      }
+      @media only screen and (max-width: 600px) {
+        form {
+          width: 87%;
+        }
+      }
+      @media only screen and (max-width: 520px) {
+        form {
+          width: 85%;
+        }
+      }
+      @media only screen and (max-width: 440px) {
+        form {
+          height: 100vh;
+          width: 90vw;
+          margin: 0;
+          position: absolute;
+          top: 0;
+          right: 0;
+          left: 0;
+          bottom: 0;
+          border: none;
+          border-radius: 0;
+          backdrop-filter: blur(10px);
+          gap: 22px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <form method="post">
+      <div class="chat_logo">
+        <img src="/media/weChat.png" alt="weChat_logo" />
+      </div>
+      <i class="close_btn">&times;</i>
+      <h2>Login</h2>
+      {% csrf_token %}
+      <div>
+        <input type="text" name="username" placeholder="Username..." required />
+      </div>
+      <div>
+        <input
+          type="password"
+          name="password"
+          placeholder="Password..."
+          required
+        />
+        <span class="material-symbols-outlined visible_eye"> visibility </span>
+      </div>
+      <button type="submit">Login</button>
+      <p>New To weChat? <a href="{% url 'signUp_view' %}">Register</a></p>
+    </form>
+
+    {% if error %}
+    <div class="toaster">
+      <i class="close_btn">&times;</i>
+      <p>{{error}}</p>
+    </div>
+    {% else %} {% endif %}
+
+    <script>
+      const toaster = document.querySelector(".toaster");
+
+      function closeToaster() {
+        if (toaster.style.display === "block" || toaster.style.display === "") {
+          toaster.style.display = "none";
+        }
+        console.log("done");
+      }
+
+      setTimeout(() => {
+        closeToaster();
+      }, 4000);
+
+
+      const show_hide = document.querySelector('input[type="password"]')
+      
+      document.querySelector('.visible_eye').addEventListener('click', function (){
+        if(show_hide.type === 'password'){
+          show_hide.type = 'text'
+          this.innerText = 'visibility_off'
+        }else{
+          show_hide.type = 'password'
+          this.innerText = 'visibility'
+        }
+      })
+
+    </script>
+  </body>
+</html>
