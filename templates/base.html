@@ -76,7 +76,8 @@
       }
     </style>
   </head>
-  <body>
+  <body class="dark-color">
+    <div class="backgorund_url_theme"></div>
     <!-- header section start -->
     <header>
       <div class="header-container">
@@ -109,15 +110,23 @@
                 align-items: center;
               "
             >
-              <label class="darkTheme"> <span></span></label>
+              <label class="darkTheme"> 
+                <span class="material-symbols-outlined">
+                  light_mode
+                  </span>
+              </label>
             </div>
-            <a href="{% url 'user_profile' %}">
+            <a href="{% url 'user_profile' request.user.username %}">
               <div
                 class="user_profile_image"
                 style="background-image: url({% if custom_user.profile_img %}{{ custom_user.profile_img.url }}{% else %}
                 '/media/weChat.png'
                 {% endif %});"
               ></div>
+
+              <span class="material-symbols-outlined more_options">
+                more_vert
+                </span>
             </a>
           </div>
         </div>
@@ -200,7 +209,7 @@
                         {% endif %});"
                       ></div>
                     </label>
-                    <div class="story-container">
+                    <div class="story-container border-50">
                       {% for story in stories %}
                       <a
                         href="#"
@@ -269,35 +278,49 @@
                           <span>{{ post.created_at|date:"d M Y, h:i A" }}</span>
                         </li>
                       </ul>
+                      <span class="material-symbols-outlined more_options_for_post">
+                        more_vert
+                        </span>
+                      </div>
+                      
+                      {% if post.image %}
+                      <div class="post-media">
+                        <img src="{{ post.image.url }}" alt="Post Image" />
+                      </div>
+                      {% elif post.video %}
+                      <div class="post-media">
+                        <video controls>
+                          <source src="{{ post.video.url }}" type="video/mp4" />
+                        </video>
+                      </div>
+                      {% endif %}
                       <p>{{ post.caption }}</p>
-                    </div>
-
-                    {% if post.image %}
-                    <div class="post-media">
-                      <img src="{{ post.image.url }}" alt="Post Image" />
-                    </div>
-                    {% elif post.video %}
-                    <div class="post-media">
-                      <video controls>
-                        <source src="{{ post.video.url }}" type="video/mp4" />
-                      </video>
-                    </div>
-                    {% endif %}
 
                     <div class="like-comment">
+                      <div class="input">
+                        <input type="text" placeholder="Add your comment...">
+                      <span class="material-symbols-outlined">
+                        send
+                        </span>
+                      </div>
                       <ul>
                         <li>
-                          <img src="images/love.png" alt="love" />
-                          <img src="images/like.png" alt="like" />
-                          <span>{{ post.likes }} like</span>
+                          <span class="material-symbols-outlined">
+                            favorite
+                            </span>
+                          {% comment %} <span>{{ post.likes }} like</span> {% endcomment %}
                         </li>
                         <li>
-                          <i class="fa-regular fa-comment-dots"></i>
-                          <span>{{ post.comments.count }} comments</span>
+                          <span class="material-symbols-outlined">
+                            comment
+                            </span>
+                          {% comment %} <span>{{ post.comments.count }} comments</span> {% endcomment %}
                         </li>
                         <li>
-                          <i class="fa-solid fa-share-from-square"></i>
-                          <span>{{ post.shares }} share</span>
+                          <span class="material-symbols-outlined">
+                            share
+                            </span>
+                          {% comment %} <span>{{ post.shares }} share</span> {% endcomment %}
                         </li>
                       </ul>
                     </div>
@@ -347,9 +370,14 @@
     {% endblock %}
     <script>
       let darkButton = document.querySelector(".darkTheme");
+      let darkLight = document.querySelector('.darkTheme > span')
 
       darkButton.onclick = function () {
-        darkButton.classList.toggle("button-Active");
+        if(darkLight.innerText === 'light_mode'){
+          darkLight.innerText = 'dark_mode'
+        }else{
+          darkLight.innerText = 'light_mode'
+        }
         document.body.classList.toggle("dark-color");
       };
 

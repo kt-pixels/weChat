@@ -226,6 +226,10 @@ select {
   background: transparent;
 }
 
+.more_options {
+  display: none;
+}
+
 /* header section style end here */
 
 /* home section start here */
@@ -637,10 +641,15 @@ select {
   display: flex;
   flex-direction: column;
 }
+.fb-p1-main > p{
+  color: white;
+  font-size: 15px;
+}
 .post-title {
   display: flex;
   flex-wrap: wrap;
   margin: 15px 0;
+  position: relative;
 }
 .post-title img {
   width: 50px;
@@ -720,8 +729,37 @@ select {
 }
 .like-comment ul li span {
   color: var(--gray);
-  margin-left: 10px;
+  font-size: 20px;
+}
+.like-comment > .input {
+  width: 100%;
+  border: 2px solid rgba(255, 255, 255, 0);
+  margin-block-end: 15px;
+  border-radius: 20px;
+  background-color: #ffffff52;
+  color: white;
   font-size: 14px;
+  padding-inline-start: 15px;
+  padding-inline-end: 10px;
+  transition: all 0.1s linear;
+  display: flex;
+  align-items: center;
+}
+.like-comment > .input:hover {
+  border: 2px solid rgb(255, 255, 255);
+}
+.like-comment > .input > input {
+  width: 100%;
+  background-color: transparent;
+  border: none;
+  padding-block: 5px;
+  color: white;
+}
+.like-comment > .input > input:focus {
+  outline: none;
+}
+.like-comment > .input > input::placeholder {
+  color: white;
 }
 
 /* facebook post 01 end */
@@ -1000,4 +1038,251 @@ select {
   cursor: pointer;
 }
 
+.stories-wrapper {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto; /* Horizontal scroll allow karega */
+  white-space: nowrap;
+  scrollbar-width: none; /* Firefox ke liye scrollbar hide */
+  -ms-overflow-style: none; /* IE aur Edge ke liye scrollbar hide */
+}
+
+.stories-wrapper::-webkit-scrollbar {
+  display: none; /* Chrome aur Safari ke liye scrollbar hide */
+}
+
+.single-stories {
+  flex: 0 0 auto; /* Items ko fixed width dena */
+  width: 120px; /* Adjust karein according to design */
+}
+
+.story-container {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
 /* home right end */
+
+/* RESPONSIVE DESIGN */
+@media only screen and (max-width: 1211px) {
+  .like-comment {
+    width: 100%;
+    margin-block: 8px;
+  }
+  .logoBox > h3 {
+    font-size: 16px;
+  }
+  .single-stories > a > div,
+  .single-stories > div {
+    height: 90%;
+  }
+  .home-center .mini-headign {
+    display: none;
+  }
+  .single-stories > a > div b,
+  .single-stories > div b {
+    bottom: 15px;
+  }
+  .single-stories > a > div i,
+  .single-stories > div i {
+    bottom: 40px;
+  }
+  .stories-wrapper {
+    margin: 0;
+  }
+}
+
+@media only screen and (max-width: 420px) {
+  .backgorund_url_theme {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    /* background-image: url("/media/blur.jpg");
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: cover; */
+  }
+  .single-stories > a > div,
+  .single-stories > div {
+    height: 60%;
+    width: 98%;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .logoBox > h3 {
+    display: none;
+  }
+  .logoBox img {
+    width: 60px;
+    margin: 0;
+  }
+  .header-wrapper {
+    padding: 0;
+  }
+  .header-container {
+    height: 60px;
+    position: absolute;
+    /* background-color: #ffffff40; */
+  }
+  .searchBox {
+    display: none;
+  }
+  .iconBox1 {
+    display: none;
+  }
+  .iconBox2 {
+    width: 100%;
+    justify-content: flex-end;
+    padding: 0;
+    align-items: center;
+  }
+
+  .home-left {
+    display: none;
+  }
+  .home-right {
+    display: none;
+  }
+
+  .home-center {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    right: 0;
+    width: 100%;
+    margin: 0;
+  }
+  .home-center .stories,
+  .home-center .createPost {
+    background-color: transparent;
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+    padding-block: 0;
+    height: 120px;
+  }
+  .single-stories label {
+    display: none;
+  }
+  .single-stories {
+    width: 20%;
+    padding: 0;
+  }
+  .single-stories > a > div b,
+  .single-stories > div b {
+    display: none;
+  }
+  .home-center-wrapper {
+    gap: 2px;
+  }
+  .fb-post1 {
+    border-radius: 0;
+    padding: 0px 12px;
+    background-color: #ffffff12;
+    backdrop-filter: blur(20px);
+  }
+  .user_profile_image {
+    width: 40px !important;
+    height: 40px !important;
+  }
+  .post-title {
+    margin-block-end: 0;
+  }
+  .post-title > ul > li > h3 {
+    font-size: 14px;
+    color: white;
+  }
+
+  .post-title ul li span {
+    font-size: 10px;
+    color: white;
+  }
+  .post-media > img,
+  .post-media > video {
+    width: 400px;
+    height: 400px;
+  }
+
+  .more_options {
+    display: block;
+  }
+
+  .iconBox2 > a > .user_profile_image {
+    display: none;
+  }
+
+  .darkTheme {
+    height: 33px !important;
+    background: #4575b300;
+    margin-right: 0px;
+    border-radius: 0px;
+    position: relative;
+    display: block;
+  }
+  .darkTheme span {
+    position: absolute;
+    width: 0px;
+    height: 0px;
+    background: rgba(255, 255, 255, 0);
+    border-radius: 0px;
+    left: 4px;
+    transition: 0.5s;
+  }
+  .iconBox1 span:hover,
+  .iconBox2 span:hover {
+    background: transparent;
+  }
+
+  .iconBox1 span,
+  .iconBox2 span {
+    font-size: 22px;
+  }
+  .story-container.border-50 {
+    border-radius: 50%;
+    width: 76px;
+    height: 70%;
+    border: 2px solid #0072ff;
+  }
+  .stories-wrapper {
+    height: 121px;
+    gap: 15px;
+    align-items: center;
+  }
+  .single-stories > a > div i,
+  .single-stories > div i {
+    bottom: 0px;
+  }
+  .story {
+    height: 75px;
+  }
+}
+
+@media only screen and (max-width: 394px) {
+  .stories-wrapper {
+    height: 100px;
+    gap: 12px;
+  }
+  .story-container.border-50 {
+    width: 70px;
+    height: 72px;
+  }
+  .home-center .stories,
+  .home-center .createPost {
+    height: 100px;
+  }
+  .post-title > ul > li > h3 > span {
+    display: none;
+  }
+  .post-title ul {
+    width: 200px;
+  }
+
+  .more_options_for_post {
+    color: white;
+    position: absolute;
+    right: 0;
+  }
+}

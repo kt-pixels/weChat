@@ -346,12 +346,13 @@ def edit_user_profile(request):
     return render(request, 'edit_profile.html', {"custom_user": custom_user})
 
 # USER_MEDIA AND PROFILE PAGE
-def user_profile(request):
+def user_profile(request, username):
+    profile_user = get_object_or_404(CustomUser, user__username=username)
     media_type = request.GET.get('media', 'photo')
 
     if media_type == 'video':
-        posts = Post.objects.filter(user=request.user, video__isnull=False).order_by('-created_at')
+        posts = Post.objects.filter(user=profile_user.user, video__isnull=False).order_by('-created_at')
     else:
-        posts = Post.objects.filter(user=request.user, image__isnull=False).order_by('-created_at')
+        posts = Post.objects.filter(user=profile_user.user, image__isnull=False).order_by('-created_at')
 
-    return render(request, 'user_profile.html', {"posts": posts, "media_type": media_type})
+    return render(request, 'user_profile.html', {"posts": posts, "profile_user": profile_user, "media_type": media_type})

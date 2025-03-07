@@ -20,7 +20,8 @@ urlpatterns = [
     path("delete-message/<int:message_id>/", views.delete_message, name="delete-message"),
 
     # 
-    path('user-profile/', views.user_profile, name='user_profile'),
+    # path('user-profile/', views.user_profile, name='user_profile'),
+    path('profile/<str:username>/', views.user_profile, name='user_profile'),
 
     # CReate post link
     path('create-post/', views.create_post, name='create_post'),

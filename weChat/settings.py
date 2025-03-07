@@ -24,8 +24,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-d8&g6qf2=6rxgx%1wj@18mt0jxcp8r$=%pd1$^dw)ino*64*)0'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
-# DEBUG = True
+# DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ["wechat-91rc.onrender.com", "localhost", "127.0.0.1"]
 # ALLOWED_HOSTS = []
@@ -55,6 +55,14 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# CLOUDINARY_STORAGE = {
+#     'CLOUD_NAME': 'your_cloud_name',
+#     'API_KEY': 'your_api_key',
+#     'API_SECRET': 'your_api_secret',
+# }
+
+# DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 ROOT_URLCONF = 'weChat.urls'
 

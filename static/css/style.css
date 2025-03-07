@@ -115,28 +115,48 @@
   color: white;
 }
 
-#media-content {
+/* #media-content {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  justify-content: space-between;
+} */
+
+#media-content {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 columns in a row */
+  max-width: 900px; /* Center alignment */
+  /* margin: auto; */
 }
 
-.photoes_posts{
-  width: 390px;
-  height: 390px;
+/* .photoes_posts {
+  /* width: 400px;
+  height: 400px;
 }
 .photoes_posts > img{
   width: 100%;
   height: 100%;
+  border-radius: 0;
 }
 .videos_posts{
-  width: 390px;
-  height: 390px;
+  width: 400px;
+  height: 400px;
 }
 .videos_posts > video{
   width: 100%;
   height: 100%;
+  border-radius: 0;
+} */
+
+.post {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1/1; /* Square images like Instagram */
+  overflow: hidden;
+}
+
+.post img, .post video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Ensure content fits perfectly */
 }
 
 
@@ -182,4 +202,27 @@
   height: auto;
   max-height: 80vh;
   border-radius: 8px;
+}
+
+@media only screen and (max-width: 420px) {
+  .profile_container{
+    margin: 0 !important;
+    width: 100vw !important;
+    box-shadow: none !important;
+    background-color: #ffffff2e !important;
+    top: 60px !important;
+  }
+.users_info{
+  color: white;
+}
+#media-content {
+  grid-template-columns: repeat(3, 1fr); /* 3 columns even on mobile */
+}
+.photoes_posts > img {
+  border-radius: 0;
+}
+.photoes_posts > video {
+  border-radius: 0;
+}
+
 }

@@ -67,10 +67,10 @@ box-shadow: 0 0 5px gray;
 display: flex;
 align-items: center;
 ">
-    <div class="user_profile_image" style="background-image: url({% if user.customuser.profile_img %}{{ user.customuser.profile_img.url }}{% else %}{% endif %}); width: 70px; height: 70px;"></div>
+    <div class="user_profile_image" style="background-image: url({% if profile_user.profile_img %}{{ profile_user.profile_img.url }}{% else %}{% endif %}); width: 70px; height: 70px;"></div>
     <div class="users_info">
-        <p>{{user.first_name}} {{user.last_name}}</p>
-        <p>{{user.username}}</p>
+        <p>{{ profile_user.user.first_name }} {{ profile_user.user.last_name }}</p>
+        <p>{{ profile_user.user.username }}</p>
     </div>
 </div>
 
@@ -81,6 +81,7 @@ align-items: center;
 <div class="tabs">
     <button class="tab-btn active" data-type="photo" onclick="filterPosts('photo')">Photos</button>
     <button class="tab-btn" data-type="video" onclick="filterPosts('video')">Videos</button>
+    <button onclick="copyProfileLink()">📋 Copy Profile Link</button>
 </div>
 
 <div id="media-content">
@@ -109,8 +110,6 @@ align-items: center;
         <p>No posts available.</p>
     {% endfor %}
 </div>
-
-
 
 <!-- Modal Structure -->
 <div id="postModal" class="modal" style="display: none;">
@@ -154,6 +153,15 @@ align-items: center;
     document.addEventListener("DOMContentLoaded", function () {
         filterPosts('photo');
     });
+
+    function copyProfileLink(){
+        let copyProfileUrl = window.location.href;
+        navigator.clipboard.writeText(copyProfileUrl).then(() => {
+            alert("Profile link copied")
+        }).catch(err => {
+            console.error("Failed to copy: ", err);
+        });
+    }
 </script>
 
 <script>
