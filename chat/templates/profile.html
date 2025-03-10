@@ -1,0 +1,83 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="{% static 'css/profile.css' %}" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
+    />
+    <title>Profile Page</title>
+  </head>
+  <body class="dark-color">
+    <div class="profile_details_container">
+      <div class="right_side">
+        <div class="profile_img">
+          <img
+            src="{{ profile_user.user.customuser.profile_img.url }}"
+            alt=""
+          />
+          <p>
+            {{profile_user.user.first_name}} {{profile_user.user.last_name}}
+          </p>
+          <p>{{profile_user.user.username}}</p>
+          <div class="follow">
+            <form
+              method="POST"
+              action="{% url 'follow_user' profile_user.user.username %}"
+            >
+              {% csrf_token %} {% if is_following %}
+              <button type="submit">Unlink</button>
+              {% else %}
+              <button type="submit">Link</button>
+              {% endif %}
+            </form>
+          </div>
+        </div>
+        {% if messages %} {% for message in messages %}
+        <div class="{{ message.tags }}">{{ message }}</div>
+        {% endfor %} {% endif %}
+        <div class="links">
+          <ul>
+            <li>Edit Profile</li>
+            <li>Followers</li>
+            <li style="position: relative" id="notification_link">
+              Notification
+              <span id="notification-badge" class="badge"></span>
+            </li>
+            <li>Save</li>
+            <li>Theme</li>
+            <li>Logout</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        function updateBadgeCount() {
+          fetch("/get-notifications/")
+            .then((response) => response.json())
+            .then((data) => {
+              const badge = document.getElementById("notification-badge");
+              const unreadCount = data.notifications.length;
+
+              if (unreadCount > 0) {
+                badge.textContent = unreadCount;
+                badge.style.display = "flex";
+              } else {
+                badge.style.display = "none";
+              }
+            });
+        }
+        setInterval(updateBadgeCount, 1000);
+
+        document.getElementById('notification_link').addEventListener('click', () => {
+          window.location.href = '{% url "all_notifications" %}'
+        })
+      });
+    </script>
+  </body>
+</html>

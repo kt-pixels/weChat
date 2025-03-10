@@ -30,6 +30,12 @@ DEBUG = True
 ALLOWED_HOSTS = ["wechat-91rc.onrender.com", "localhost", "127.0.0.1"]
 # ALLOWED_HOSTS = []
 
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",  # Temporary memory-based cache
+        "LOCATION": "unique-snowflake"
+    }
+}
 
 
 # Application definition

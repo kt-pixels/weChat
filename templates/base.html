@@ -74,6 +74,21 @@
         max-width: 100%;
         border-radius: 8px;
       }
+      .badge {
+        background-color: red !important;
+        color: #fff !important;
+        border-radius: 50% !important;
+        width: 18px;
+        height: 18px;
+        justify-content: center;
+        align-items: center;
+        font-size: 12px !important;
+        font-weight: 600 !important;
+        position: absolute;
+        top: -1px;
+        right: 2px;
+        display: none;
+      }
     </style>
   </head>
   <body class="dark-color">
@@ -99,10 +114,20 @@
             <a href="{% url 'create_post' %}">
               <span class="material-symbols-outlined"> add_circle </span>
             </a>
-            <span class="material-symbols-outlined"> forum </span>
+            
           </div>
           <div class="iconBox2">
-            <span class="material-symbols-outlined"> notifications </span>
+            <a href="{% url 'all_notifications' %}" style="position: relative;">
+              <span class="material-symbols-outlined">notifications</span>
+              {% if notification_unread > 0 %}
+                  <span id="notification-badge" class="badge">{{ notification_unread }}</span>
+              {% endif %}
+          </a>
+          <a href="{% url 'message_room' %}">
+            <span class="material-symbols-outlined"> forum </span>
+          </a>
+          
+          
             <div
               style="
                 display: flex;
@@ -116,7 +141,7 @@
                   </span>
               </label>
             </div>
-            <a href="{% url 'user_profile' request.user.username %}">
+            <a href="{% url 'main_user_profile' request.user.username %}">
               <div
                 class="user_profile_image"
                 style="background-image: url({% if custom_user.profile_img %}{{ custom_user.profile_img.url }}{% else %}
@@ -477,6 +502,23 @@
             }
           }
         });
+
+        function updateBadgeCount() {
+          fetch("/get-notifications/")
+              .then(response => response.json())
+              .then(data => {
+                  const badge = document.getElementById('notification-badge');
+                  const unreadCount = data.notifications.length;
+                  
+                  if (unreadCount > 0) {
+                      badge.textContent = unreadCount;
+                      badge.style.display = 'flex';
+                  } else {
+                      badge.style.display = 'none';
+                  }
+              });
+      }
+      setInterval(updateBadgeCount, 1000);
       });
     </script>
 

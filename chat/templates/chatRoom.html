@@ -7,23 +7,45 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="{% static 'css/style.css' %}" />
     <title>Chat room</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Titillium+Web:ital,wght@0,200;0,300;0,400;0,600;0,700;0,900;1,200;1,300;1,400;1,600;1,700&display=swap"
+      rel="stylesheet"
+    />
     <style>
-      .background_image{
+      body {
+        background: #222230;
+        margin: 0;
+        padding: 0;
+        font-family: "Titillium Web", sans-serif;
+        font-weight: 300;
+        font-style: normal;
+      }
+      .background_image {
         position: fixed;
         top: 0;
         right: 0;
         left: 0;
         bottom: 0;
       }
-      .background_image > img{
+      .background_image > img {
         width: 100%;
       }
     </style>
+
+    {% comment %} <script src="https://cdn.jsdelivr.net/npm/@joeattardi/emoji-button@4.6.2/dist/index.min.js"></script> {% endcomment %}
+    <script src="https://cdn.jsdelivr.net/npm/@emoji-mart/react@1.0.1/dist/emoji-mart.min.js"></script>
+
+
   </head>
   <body>
     <div class="background_image">
-      <img src="/media/chat_theme.jpg" alt="">
+      <img src="/media/dark.jpg" alt="" />
     </div>
     <h2
       style="
@@ -44,10 +66,24 @@
         text-transform: capitalize;
       "
     >
-    <span class="material-symbols-outlined">
-      keyboard_return
+      <span class="material-symbols-outlined" id="back_to_home">
+        keyboard_backspace
       </span>
       {{receiver.first_name}} {{receiver.last_name}}
+      <p
+        id="typing_status_here"
+        style="
+          margin: 0;
+          font-size: 12px;
+          font-weight: 300;
+          text-transform: lowercase;
+          position: absolute;
+          right: 15px;
+          top: 26px;
+        "
+      >
+        Typing...
+      </p>
     </h2>
 
     <div id="chatBox">
@@ -88,20 +124,21 @@
 
     <form method="post" id="ChatForm" enctype="multipart/form-data">
       {% csrf_token %}
-      <input
-        type="text"
-        id="chatInput"
-        placeholder="Type here..."
-        name="message"
-        required
-      />
-      <button type="submit">
-        <span class="material-symbols-outlined">
-          send
-          </span>
-      </button>
+      <div>
+        <input
+          type="text"
+          id="chatInput"
+          placeholder="Type here..."
+          name="message"
+          required
+        />
+        <button type="submit">
+          <span class="material-symbols-outlined"> send </span>
+        </button>
+      </div>
     </form>
 
+    {% comment %} MESSAGE FETCHING {% endcomment %}
     <script>
       document.addEventListener("DOMContentLoaded", () => {
         const chatBox = document.getElementById("chatBox");
@@ -146,8 +183,8 @@
 
                 messageElement.innerHTML = `
           <p>${msg.text}</p>
-          <span class="timestamp">${formattedTime}</span>
-        `;
+          <span class="timestamp">${formattedTime}</span>`
+        ;
                 chatBox.appendChild(messageElement);
               });
 
@@ -202,7 +239,8 @@
         fetchMessages();
       });
     </script>
-
+    {% comment %} MESSAGE FETCHING {% endcomment %} {% comment %} MESSAGE
+    DELETEING {% endcomment %}
     <script>
       document
         .getElementById("chatBox")
@@ -221,6 +259,58 @@
 
           console.log("Clicked message ID:", messageId);
         });
+
+      document.getElementById("back_to_home").addEventListener("click", () => {
+        window.location.href = '{% url "message_room" %}';
+      });
     </script>
+    {% comment %} MESSAGE DELETEING {% endcomment %} {% comment %} TYPING STATUS
+    {% endcomment %}
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const chatInput = document.getElementById("chatInput");
+        const typingStatus = document.getElementById("typing_status_here");
+        const chatWith = "{{ receiver.username }}";
+        const currentUser = "{{ request.user.username }}";
+
+        typingStatus.innerText = "Typing...";
+        typingStatus.style.display = "none";
+
+        let typingTimer;
+
+        // Typing status bhejne ka logic
+        chatInput.addEventListener("input", () => {
+          clearTimeout(typingTimer);
+
+          fetch(
+            `/typing-status/?from=${currentUser}&to=${chatWith}&status=typing`
+          ).catch((err) => console.error("Error sending typing status:", err));
+
+          typingTimer = setTimeout(() => {
+            fetch(
+              `/typing-status/?from=${currentUser}&to=${chatWith}&status=stop`
+            ).catch((err) =>
+              console.error("Error sending typing status:", err)
+            );
+          }, 2000);
+        });
+
+        // Dusre user ka typing status check karne ka logic
+        function checkTypingStatus() {
+          fetch(`/typing-status/?from=${chatWith}&to=${currentUser}`)
+            .then((response) => response.json())
+            .then((data) => {
+              typingStatus.style.display = data.is_typing ? "block" : "none";
+            })
+            .catch((err) =>
+              console.error("Error fetching typing status:", err)
+            );
+        }
+
+        setInterval(checkTypingStatus, 1000);
+      });
+    </script>
+    {% comment %} TYPING STATUS {% endcomment %}    
+    
   </body>
 </html>

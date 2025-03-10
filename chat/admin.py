@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import ChatRoom, Message, CustomUser, Post, Story
+from .models import ChatRoom, Message, CustomUser, Post, Story, Follow, Notification
 from django.contrib.auth.models import User
 
 # Register your models here.
@@ -33,3 +33,9 @@ admin.site.register(ChatRoom, ChatRoomAdmin)
 
 admin.site.register(Post)
 admin.site.register(Story)
+admin.site.register(Follow)
+admin.site.register(Notification)
+
+
+# registering follow model inside to user model
+

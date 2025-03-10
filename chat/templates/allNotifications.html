@@ -1,0 +1,116 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Titillium+Web:ital,wght@0,200;0,300;0,400;0,600;0,700;0,900;1,200;1,300;1,400;1,600;1,700&display=swap"
+      rel="stylesheet"
+    />
+    <title>Notifications</title>
+    <style>
+      body {
+        background: #222230;
+        margin: 0;
+        padding: 0;
+        font-family: "Titillium Web", sans-serif;
+        font-weight: 300;
+        font-style: normal;
+      }
+      .notifications_img {
+        width: 40px;
+        height: 40px;
+        background-position: center center;
+        background-repeat: no-repeat;
+        background-size: cover;
+        border-radius: 50%;
+        border: 2px solid #0072ff;
+      }
+      
+
+      .notifications_container {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+      }
+
+      .notifications_container > h1 {
+        padding: 10px;
+        margin: 0;
+        font-size: 20px;
+        color: white;
+        box-shadow: 0 0 10px black;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .notifications_container > h1 > p {
+        margin: 0;
+      }
+
+      .notification {
+        padding: 10px;
+        background-color: #ffffff30;
+        display: flex;
+        gap: 10px;
+      }
+
+      .notification.unread {
+        background-color: #e3f2fd7a;
+        font-weight: bold;
+      }
+
+      .notification > .notify > a,
+      small {
+        color: white;
+        text-decoration: none;
+      }
+
+      .notify {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-evenly;
+      }
+    </style>
+  </head>
+  <body class="dark-color">
+    <div class="notifications_container">
+      <h1>
+        <span class="material-symbols-outlined" id="back_to_home"> keyboard_backspace </span>
+        <p>Notifications</p>
+      </h1>
+      {% for notification in notifications %}
+      <div
+        class="notification {% if not notification.is_read %}unread{% endif %}"
+      >
+        <div
+          class="notifications_img"
+          style="background-image: url({{ notification.sender.customuser.profile_img.url }});"
+        ></div>
+        <div class="notify">
+          <a href="{% url 'mark_notifications_as_read' notification.id %}">
+            {{ notification.message }}
+          </a>
+          <small>{{ notification.created_at|timesince }} ago</small>
+        </div>
+      </div>
+      {% empty %}
+      <p>No notifications found.</p>
+      {% endfor %}
+    </div>
+
+    <script>
+      document.getElementById('back_to_home').addEventListener('click', () => {
+        window.history.back();
+      })
+    </script>
+  </body>
+</html>

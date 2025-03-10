@@ -71,26 +71,34 @@
   z-index: 2;
 }
 
-#ChatForm > input {
+#ChatForm > div > input {
   width: 100%;
-  padding: 10px;
-  border-radius: 10px 0px 0px 10px;
   border: none;
+  background-color: transparent;
+  color: white;
+}
+#ChatForm > div {
+  width: 100%;
+  display: flex
+;
   background-color: #ffffff38;
+  padding: 5px;
+  border-radius: 10px 0px 0px 10px;
+  gap: 10px;
+}
+#ChatForm > div > input::placeholder{
   color: white;
 }
-#ChatForm > input::placeholder{
+#ChatForm > div > input:focus-within{
   color: white;
 }
-#ChatForm > input:focus-within{
-  color: white;
+#ChatForm > div > input:focus{
+  outline: none;
 }
-#ChatForm > button {
-  border-radius: 0px 10px 10px 0px;
+#ChatForm > div > button:nth-child(2) {
   border: none;
-  background-color: rgb(0 0 0 / 39%);
+  background-color: transparent;
   color: white;
-  
 }
 
 

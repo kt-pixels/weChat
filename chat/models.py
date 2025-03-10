@@ -47,6 +47,7 @@ class Message(models.Model):
     sender = models.ForeignKey(User, on_delete=models.CASCADE)
     text = models.CharField(max_length=1500)
     timestamp = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False) 
 
     def __str__(self):
         return f"{self.id} : {self.sender.username} :- {self.text[:20]}"
@@ -75,6 +76,18 @@ class Follow(models.Model):
     def __str__(self):
         return f"{self.follower} follows {self.following}"
     
+
+# Notification for follower page
+class Notification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_notifications')
+    message = models.CharField(max_length=255)
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Notification for {self.user.username}"
+
 # STORY MODEL
 class Story(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='stories')
@@ -88,18 +101,3 @@ class Story(models.Model):
     
     def is_active(self):
         return (now() - self.created_at).total_seconds() < 86400 # 24 hours
-
-# User profile page
-class Media(models.Model):
-    MEDIA_TYPES = (
-        ('photo', 'Photo'),
-        ('video', 'Video'),
-    )
-
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    media_type = models.CharField(max_length=10, choices=MEDIA_TYPES)
-    file = models.FileField(upload_to='media/')
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"{self.user.username} - {self.media_type}"

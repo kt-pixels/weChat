@@ -1,0 +1,121 @@
+.dark-color {
+  --background: #222230;
+  --foreground: #42435c;
+  --white: #2b2c44;
+  --black: #eeecff;
+  --gray: #d5dfd5;
+  --shadow: #00000063;
+  --border: #3f4172;
+}
+
+body {
+  background: var(--background);
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: #3a78ffec;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.profile_details_container {
+  margin: 20px;
+  background-color: #2b2c44;
+  padding: 20px;
+  width: 40%;
+}
+.profile_details_container > .right_side {
+  width: 100%;
+  background-color: #ffffff1f;
+  height: 100vh;
+}
+.profile_details_container > .right_side > .profile_img {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  padding-block: 20px;
+}
+.profile_details_container > .right_side > .profile_img > img {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+}
+.profile_details_container > .right_side > .profile_img > p:nth-child(2) {
+  text-transform: capitalize;
+  color: white;
+}
+.profile_details_container > .right_side > .profile_img > p {
+  color: white;
+  margin: 0;
+}
+.links > ul {
+  display: flex;
+  flex-direction: column;
+  color: white;
+  list-style: none;
+  padding: 10px;
+  justify-content: space-between;
+}
+.links > ul > li {
+  padding: 10px;
+  background-color: #222230;
+  border-bottom: 1px solid #2b2c44;
+  cursor: pointer;
+}
+.follow > button {
+  background-color: #585cb7;
+  padding: 10px;
+  padding-inline: 20px;
+  border-radius: 5px;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+/*  */
+.notification-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+}
+
+.notification-popup {
+  background-color: #25d366; /* WhatsApp Green */
+  color: #fff;
+  border-radius: 8px;
+  padding: 10px 15px;
+  margin-bottom: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.notification-popup.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.notification-icon {
+  position: relative;
+}
+
+.badge {
+  background-color: red;
+  color: #fff;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 12px;
+  position: absolute;
+  top: 2px;
+  left: 5rem;
+  display: none;
+}
+
+/*  */

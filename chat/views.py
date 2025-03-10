@@ -2,13 +2,17 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
-from .models import ChatRoom, Message, Follow, Post, Story, CustomUser
+from .models import ChatRoom, Message, Follow, Post, Story, CustomUser, Notification
 from django.http import JsonResponse
 from .forms import PostForm, StoryForm
 from datetime import timedelta
 from django.utils.timezone import now
 import random
-import re
+from django.db.models import Max, Q
+from django.contrib import messages
+from django.utils.text import Truncator
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.core.cache import cache
 
 # Create your views here.
 # SIGN UP VIEW
@@ -110,8 +114,11 @@ def home_page(request):
         users = User.objects.all().select_related('customuser')
         user = None
 
+    notification_unread = Notification.objects.filter(user=request.user, is_read=False).count()
+
      # Active stories (only stories which are not older than 24 hours)
-    active_stories = Story.objects.filter(created_at__gte=now() - timedelta(hours=24))
+    followed_users = User.objects.filter(followers__follower=request.user)
+    active_stories = Story.objects.filter(user__in=followed_users ,created_at__gte=now() - timedelta(hours=24))
 
     # User ne dekhi ya nahi dekhi, us basis par sort karein
     unseen_stories = []
@@ -148,6 +155,7 @@ def home_page(request):
         "latest_posts": latest_post,
         "random_post": random_post,
         "current_time": now(),
+        "notification_unread": notification_unread,
     }
     return render(request, 'base.html', context)
 
@@ -163,6 +171,9 @@ def chat_room(request, username):
         chatroom , created = ChatRoom.objects.get_or_create(user1=user1, user2=user2)
     else:
         chatroom , created = ChatRoom.objects.get_or_create(user1=user2, user2=user1)
+
+    if request.user == user2:
+        Message.objects.filter(chatroom=chatroom, is_read=False).update(is_read=True)
     
     if request.method == "POST":
         message_text = request.POST.get("message")
@@ -172,6 +183,7 @@ def chat_room(request, username):
                 chatroom=chatroom,
                 sender=user1,
                 text=message_text,
+                is_read=False
             )
     
     messages = Message.objects.filter(chatroom=chatroom).order_by('timestamp')
@@ -184,6 +196,26 @@ def chat_room(request, username):
 
     return render(request, "chatRoom.html", context)
 
+# Typing status
+typing_status_data = {}
+
+def typing_status(request):
+    global typing_status_data
+
+    from_user = request.GET.get('from')
+    to_user = request.GET.get('to')
+    status = request.GET.get('status')
+
+    # Typing status update logic
+    if status:
+        if to_user not in typing_status_data:
+            typing_status_data[to_user] = {}
+        typing_status_data[to_user][from_user] = True if status == 'typing' else False
+        return JsonResponse({"status": "success"})
+
+     # Typing status fetch logic
+    is_typing = any(typing_status_data.get(request.user.username, {}).values())
+    return JsonResponse({'is_typing': is_typing})
 
 # MESSAGE FETCHING VIEW
 def message_fetching_view(request, username):
@@ -212,7 +244,6 @@ def message_fetching_view(request, username):
 
     return JsonResponse({'messages': messages_data})
 
-
 def delete_message(request, message_id):
     message = get_object_or_404(Message, id=message_id)
     if message.sender == request.user:  # Sirf sender delete kar sakta hai
@@ -222,17 +253,26 @@ def delete_message(request, message_id):
 
 # FOLLOWER
 def follow_user(request, username):
-    if request.method == 'POST':
-        user_to_follow = get_object_or_404(User, username=username)
-        follow, created = Follow.objects.get_or_create(follower=request.user, following=user_to_follow)
+    user_to_follow = get_object_or_404(User, username=username)
 
-        if not created:
-            follow.delete() # unfollow
-            return JsonResponse({"message": "Unfollow Successfully"})
-        return JsonResponse({"message": "Follow Success"})
+    if user_to_follow == request.user:
+        messages.error(request, "You cannot follow yourself.")
+        return redirect('main_user_profile', username=username)
     
-    return JsonResponse({"error": "Invalid request"}, status=400)
+    follow, created = Follow.objects.get_or_create(follower=request.user, following=user_to_follow)
 
+    if not created:
+        follow.delete()  # Unfollow
+        messages.success(request, f"You have unfollowed {user_to_follow.username}")
+    else:
+        Notification.objects.create(
+            user=user_to_follow,
+            sender=request.user,
+            message=f"{request.user.username} started following you.",
+        )
+        messages.success(request, f"You are now following {user_to_follow.username}")
+
+    return redirect('main_user_profile', username=username)
 
 # Post view
 def create_post(request):
@@ -261,37 +301,6 @@ def create_story(request):
         form = StoryForm()
     
     return render(request, 'create_story.html', {"form": form}) 
-
-def mark_story_viewed(request, story_id):
-    if request.user.is_authenticated:
-        story = Story.objects.get(id=story_id)
-        story.viewers.add(request.user)
-        return JsonResponse({"status": "viewed"})
-    return JsonResponse({"error": "Unauthorized"}, status=403)
-
-def user_stories_view(request, user_id):
-    user_stories = Story.objects.filter(user_id=user_id).order_by('created_at')
-
-    if not user_stories:
-        return render(request, 'no_stories.html')  # Agar stories na ho toh ek simple message dikha do
-
-    return render(request, 'stories_view.html', {'stories': user_stories})
-
-def delete_old_stories():
-    Story.objects.filter(created_at__lt=now()-timedelta(hours=24)).delete()
-
-
-# FOLLOWING USERS POST AND STORIES
-def timeline(request):
-    # Get list of users the current user is following
-    following_users = Follow.objects.filter(follower=request.user).values_list("following", flat=True)
-
-    # Get posts & stories only from followed users
-    posts = Post.objects.filter(user__id__in=following_users).order_by("-created_at")
-    stories = Story.objects.filter(user__id__in=following_users).order_by("-created_at")
-
-    return render(request, "timeline.html", {"posts": posts, "stories": stories})
-
 
 # EDIT PROFILE
 def edit_user_profile(request):
@@ -356,3 +365,78 @@ def user_profile(request, username):
         posts = Post.objects.filter(user=profile_user.user, image__isnull=False).order_by('-created_at')
 
     return render(request, 'user_profile.html', {"posts": posts, "profile_user": profile_user, "media_type": media_type})
+
+def profile(request, username):
+    profile_user = get_object_or_404(CustomUser, user__username=username)
+    is_following = Follow.objects.filter(follower=request.user, following=profile_user.user)
+    return render(request, 'profile.html', {"profile_user" : profile_user, "is_following": is_following})
+
+# GET NOTIFICATION
+def get_notifications(request):
+    notifications = Notification.objects.filter(user=request.user, is_read=False)
+
+    data = [
+        {
+            "message": notification.message,
+            "created_at": notification.created_at.strftime("%d/%m/%Y, %H:%M:%S")
+        }
+
+        for notification in notifications
+    ]
+    return JsonResponse({'notifications': data})
+
+# ✅ Mark Notifications as Read
+def mark_notification_as_read(request, notification_id):
+    notification = get_object_or_404(Notification, id=notification_id, user=request.user)
+    notification.is_read = True
+    notification.save()
+    return redirect('all_notifications')
+
+# notification page
+def notifications_view(request):
+    notifications = Notification.objects.filter(user=request.user).select_related('sender__customuser').order_by('-created_at')
+    return render(request, 'allNotifications.html', {"notifications": notifications})
+
+
+# MESSAGE ROOM
+def followers_message_room(request):
+    followed_users = User.objects.filter(followers__follower=request.user)
+
+    # Latest messages ko fetch karein (User1 ya User2 ke hisaab se check karna hoga)
+    latest_messages = (
+        Message.objects.filter(
+            Q(chatroom__user1__in=followed_users, chatroom__user2=request.user) |
+            Q(chatroom__user2__in=followed_users, chatroom__user1=request.user)
+        )
+        .values('chatroom__user1', 'chatroom__user2')
+        .annotate(latest_time=Max('timestamp'))
+        .order_by('-latest_time')
+    )
+
+    # Dictionary to store user details with their latest message
+    user_message_data = []
+
+    for msg in latest_messages:
+        user_id = msg['chatroom__user1'] if msg['chatroom__user1'] != request.user.id else msg['chatroom__user2']
+
+        # User ka detail fetch karen
+        user = User.objects.get(id=user_id)
+        latest_message = Message.objects.filter(
+            Q(chatroom__user1=user, chatroom__user2=request.user) |
+            Q(chatroom__user2=user, chatroom__user1=request.user)
+        ).order_by('-timestamp').first()
+
+        user_message_data.append({
+            'user': user,
+            'latest_message': Truncator(latest_message.text).chars(30) if latest_message else "No messages yet",
+            'timestamp': latest_message.timestamp.strftime("%d/%m/%Y, %H:%M") if latest_message else None,
+            'unread_count': Message.objects.filter(
+                Q(chatroom__user1=user, chatroom__user2=request.user, is_read=False) |
+                Q(chatroom__user2=user, chatroom__user1=request.user, is_read=False)
+            ).count()
+        })
+
+    # Latest message ke basis par sorting
+    user_message_data.sort(key=lambda x: x['timestamp'], reverse=True)
+
+    return render(request, 'messageTo.html', {"user_message_data": user_message_data})

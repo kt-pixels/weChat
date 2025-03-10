@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Titillium+Web:ital,wght@0,200;0,300;0,400;0,600;0,700;0,900;1,200;1,300;1,400;1,600;1,700&display=swap"
+      rel="stylesheet"
+    />
+    <title>Chat with</title>
+    <style>
+      body {
+        background: #222230;
+        margin: 0;
+        padding: 0;
+        font-family: "Titillium Web", sans-serif;
+        font-weight: 300;
+        font-style: normal;
+      }
+      .notifications_img {
+        width: 40px;
+        height: 40px;
+        background-position: center center;
+        background-repeat: no-repeat;
+        background-size: cover;
+        border-radius: 50%;
+        border: 2px solid #0072ff;
+      }
+
+      .notifications_container {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+      }
+
+      .notifications_container > h1 {
+        padding: 10px;
+        margin: 0;
+        font-size: 20px;
+        color: white;
+        box-shadow: 0 0 10px black;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .notifications_container > h1 > p {
+        margin: 0;
+      }
+      .notifications_container > a{
+        text-decoration: none;
+      }
+
+      .notification {
+        padding: 10px;
+        background-color: #ffffff30;
+        display: flex;
+        gap: 10px;
+        position: relative;
+      }
+
+      .notification.unread {
+        background-color: #e3f2fd7a;
+        font-weight: bold;
+      }
+
+      .notification > .notify > p {
+        color: white;
+        text-decoration: none;
+        margin: 0;
+      }
+      .notification > .notify > p > span {
+        font-size: 10px;
+        position: absolute;
+        right: 8px;
+        top: 7px;
+        width: 60px;
+      }
+      .unread-badge {
+        font-size: 10px;
+        position: absolute;
+        background-color: #0072ff;
+        color: #fff;
+        border-radius: 50%;
+        padding: 2px 8px;
+        margin-left: 5px;
+        font-weight: bold;
+        top: 38px !important;
+        width: 10px !important;
+      }
+
+      .notify {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-evenly;
+      }
+    </style>
+  </head>
+  <body class="dark-color">
+    <div class="notifications_container">
+      <h1>
+        <span class="material-symbols-outlined" id="back_to_home">
+          keyboard_backspace
+        </span>
+        <p>Chat Room</p>
+      </h1>
+      {% for item in user_message_data %}
+      <a href="{% url 'chat_room' item.user.username %}">
+        <div class="notification">
+            <div
+              class="notifications_img"
+              style="background-image: url({{ item.user.customuser.profile_img.url }});"
+            ></div>
+            <div class="notify">
+              <p class="username">{{ item.user.username }}
+                {% if item.unread_count > 0 %}
+                    <span class="unread-badge">{{ item.unread_count }}</span>
+              {% endif %}
+              </p>
+              <p class="latest-message">
+                {{ item.latest_message }} 
+                <span>{{ item.timestamp }}</span>
+              </p>
+              
+            </div>
+          </div>
+      </a>
+      {% empty %}
+      <p>You are not following anyone yet or no recent messages available.</p>
+      {% endfor %}
+    </div>
+
+    <script>
+      document.getElementById("back_to_home").addEventListener("click", () => {
+        window.history.back();
+      });
+    </script>
+  </body>
+</html>
