@@ -13,11 +13,8 @@
       href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Titillium+Web:ital,wght@0,200;0,300;0,400;0,600;0,700;0,900;1,200;1,300;1,400;1,600;1,700&display=swap"
       rel="stylesheet"
     />
-    <title>Chat with</title>
+    <title>Followers</title>
     <style>
-      a {
-        text-decoration: none;
-      }
       body {
         background: #222230;
         margin: 0;
@@ -102,6 +99,7 @@
         display: flex;
         flex-direction: column;
         justify-content: space-evenly;
+        font-size: 14px;
       }
 
       .chat_icon {
@@ -118,6 +116,9 @@
         right: 20px;
         z-index: 1000;
       }
+      .notify .username:nth-child(1){
+        text-transform: capitalize;
+      }
     </style>
   </head>
   <body class="dark-color">
@@ -126,75 +127,31 @@
         <span class="material-symbols-outlined" id="back_to_home">
           keyboard_backspace
         </span>
-        <p>Chat Room</p>
+        <p>Followers</p>
       </h1>
-      <div id="data-container">
-        <!-- Yeh block dynamically AJAX se update hoga -->
-      </div>
+      {% for user in followed_users %}
+      <a href="{% url 'chat_room' user.following.username %}">
+        <div class="notification">
+          <div
+            class="notifications_img"
+            style="background-image: url({{ user.following.customuser.profile_img.url }});"
+          ></div>
+          <div class="notify">
+            <p class="username">
+                {{user.following.first_name}} {{user.following.last_name}}
+            </p>
+            <p class="username">
+                {{user.following.username}}
+            </p>
+          </div>
+        </div>
+      </a>
+      {% endfor %}
     </div>
-
-    <a href="{% url 'followed_users' %}">
-      <div class="chat_icon">
-        <span class="material-symbols-outlined"> chat </span>
-      </div>
-    </a>
 
     <script>
       document.getElementById("back_to_home").addEventListener("click", () => {
-        window.location.href = "/";
-      });
-    </script>
-
-    <script>
-      document.addEventListener("DOMContentLoaded", function refreshPageData() {
-        const container = document.getElementById("data-container");
-
-        if (container) {
-          fetch("/message-to/", {
-            headers: { "X-Requested-With": "XMLHttpRequest" }, // AJAX request ko identify karne ke liye
-          })
-            .then((response) => response.json())
-            .then((data) => {
-              // Container ko clear karein
-              container.innerHTML = "";
-
-              // Data ko loop mein display karein
-              data.user_message_data.forEach((item) => {
-                const notification = document.createElement("div");
-                const chatOpening = document.createElement("a");
-                chatOpening.href = `/chat/${item.username}/`;
-                notification.className = "notification";
-
-                notification.innerHTML = `
-                        <div class="notifications_img" 
-                             style="background-image: url(${
-                               item.profile_img
-                             });">
-                        </div>
-                        <div class="notify">
-                            <p class="username">
-                                ${item.username}
-                                ${
-                                  item.unread_count > 0
-                                    ? `<span class="unread-badge">${item.unread_count}</span>`
-                                    : ""
-                                }
-                            </p>
-                            <p class="latest-message">
-                                ${item.latest_message}
-                                <span>${item.timestamp || ""}</span>
-                            </p>
-                        </div>
-                    `;
-
-                chatOpening.appendChild(notification);
-                container.appendChild(chatOpening);
-              });
-            })
-            .catch((error) => console.error("Error fetching data:", error));
-
-          setTimeout(refreshPageData, 1000); // Har second mein auto-refresh kare
-        }
+        window.location.href = '{% url "message_room" %}';
       });
     </script>
   </body>

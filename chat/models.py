@@ -48,6 +48,7 @@ class Message(models.Model):
     text = models.CharField(max_length=1500)
     timestamp = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False) 
+    seen_at = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
         return f"{self.id} : {self.sender.username} :- {self.text[:20]}"

@@ -30,12 +30,11 @@ DEBUG = True
 ALLOWED_HOSTS = ["wechat-91rc.onrender.com", "localhost", "127.0.0.1"]
 # ALLOWED_HOSTS = []
 
-CACHES = {
-    "default": {
-        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",  # Temporary memory-based cache
-        "LOCATION": "unique-snowflake"
-    }
-}
+# User ko indefinitely logged-in rakhne ke liye 1 saal ka session expiry set karein
+SESSION_COOKIE_AGE = 31536000  # 1 saal = 60 * 60 * 24 * 365 seconds
+
+# Browser close hone par bhi session ko active rakhne ke liye
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 
 
 # Application definition

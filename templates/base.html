@@ -123,9 +123,10 @@
                   <span id="notification-badge" class="badge">{{ notification_unread }}</span>
               {% endif %}
           </a>
-          <a href="{% url 'message_room' %}">
+          <a href="{% url 'message_room' %}" style="position: relative;">
             <span class="material-symbols-outlined"> forum </span>
-          </a>
+            <span id="message-badge" class="badge"></span>
+        </a>
           
           
             <div
@@ -520,6 +521,29 @@
       }
       setInterval(updateBadgeCount, 1000);
       });
+    </script>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        function updateMessageBadgeCount() {
+          fetch("/get-unread-messages/")  // Aapko is URL ko apne Django views ke hisaab se update karna hoga
+              .then(response => response.json())
+              .then(data => {
+                  const messageBadge = document.getElementById('message-badge');
+                  const unreadMessages = data.unread_messages;
+      
+                  if (unreadMessages > 0) {
+                      messageBadge.textContent = unreadMessages;
+                      messageBadge.style.display = 'flex';
+                  } else {
+                      messageBadge.style.display = 'none';
+                  }
+              });
+      }
+      
+      // Har second mein badge count update karne ke liye
+      setInterval(updateMessageBadgeCount, 1000);
+      })    
     </script>
 
     {% block scripting %}{% endblock %}

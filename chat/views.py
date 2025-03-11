@@ -11,10 +11,10 @@ import random
 from django.db.models import Max, Q
 from django.contrib import messages
 from django.utils.text import Truncator
-from django.views.decorators.csrf import ensure_csrf_cookie
-from django.core.cache import cache
 
 # Create your views here.
+# ++++++++++ REGISTRATION FUNCTIONALITY START HERE ++++++++++++++++++++++
+
 # SIGN UP VIEW
 def signUp_view(request):
     if request.method == 'POST':
@@ -54,7 +54,6 @@ def signUp_view(request):
     
     return render(request, 'signup.html')
 
-
 # CHECK USERNAME IS AVAILABLE OR NOT
 def check_username(request):
     username = request.GET.get('username', '').strip()
@@ -79,18 +78,24 @@ def check_email(request):
     
     return JsonResponse({'success': "This emial is available."})
         
-
 # LOGIN VIEW
 def login_view(request):
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
+        remember_me = request.POST.get('remember_me')
 
         user = authenticate(username=username, password=password)
 
         if user is not None:
             login(request, user)
+
+            # Agar 'Remember Me' unchecked hai, to session expiry ko kam kar dein
+            if not remember_me:
+                request.session.set_expiry(0)
+
             return redirect('home_page')
+        
         return render(request, 'login.html', {"error": "Invalid Credentials"})
     return render(request, 'login.html')
 
@@ -98,6 +103,8 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return redirect('login_view')
+
+# ++++++++++++++ REGISTRATION FUNCTIONALITY FINISH HERE +++++++++++++++++
 
 # HOME VIEW
 @login_required(login_url='login_view')
@@ -172,8 +179,10 @@ def chat_room(request, username):
     else:
         chatroom , created = ChatRoom.objects.get_or_create(user1=user2, user2=user1)
 
-    if request.user == user2:
-        Message.objects.filter(chatroom=chatroom, is_read=False).update(is_read=True)
+    Message.objects.filter(
+        chatroom=chatroom, 
+        is_read=False
+    ).exclude(sender=user1).update(is_read=True, seen_at=now())
     
     if request.method == "POST":
         message_text = request.POST.get("message")
@@ -427,16 +436,47 @@ def followers_message_room(request):
         ).order_by('-timestamp').first()
 
         user_message_data.append({
-            'user': user,
+            'username': user.username,
+            'profile_img': user.customuser.profile_img.url,
             'latest_message': Truncator(latest_message.text).chars(30) if latest_message else "No messages yet",
             'timestamp': latest_message.timestamp.strftime("%d/%m/%Y, %H:%M") if latest_message else None,
             'unread_count': Message.objects.filter(
                 Q(chatroom__user1=user, chatroom__user2=request.user, is_read=False) |
                 Q(chatroom__user2=user, chatroom__user1=request.user, is_read=False)
-            ).count()
+            ).exclude(sender=request.user).count()
         })
+
+    # JSON Response for AJAX request
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'user_message_data': user_message_data})
 
     # Latest message ke basis par sorting
     user_message_data.sort(key=lambda x: x['timestamp'], reverse=True)
 
     return render(request, 'messageTo.html', {"user_message_data": user_message_data})
+
+def get_unread_messages(request):
+    if request.user.is_authenticated:
+        unread_messages = Message.objects.filter(
+            ~Q(sender=request.user),  # Sirf doosre user ke messages ko count kare
+            Q(chatroom__user1=request.user) | Q(chatroom__user2=request.user)
+        ).filter(is_read=False).count()
+        return JsonResponse({'unread_messages': unread_messages})
+    return JsonResponse({'unread_messages': 0})
+
+# def get_unread_messages(request):
+#     if request.user.is_authenticated:
+#         # Sirf current user ke unread messages ko count karein
+#         unread_messages = Message.objects.filter(
+#             receiver=request.user, 
+#             is_read=False
+#         ).count()
+
+#         return JsonResponse({'unread_messages': unread_messages})
+#     else:
+#         return JsonResponse({'unread_messages': 0})
+
+# FOLLOWERS
+def followers_view(request):
+    followed_users = Follow.objects.filter(follower=request.user).select_related('following')
+    return render(request, 'followers.html', {'followed_users': followed_users})

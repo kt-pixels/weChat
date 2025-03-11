@@ -40,5 +40,7 @@ urlpatterns = [
 
     # Message room
     path('message-to/', views.followers_message_room, name="message_room"),
+    path('followers/', views.followers_view, name="followed_users"),
+    path('get-unread-messages/', views.get_unread_messages, name='get_unread_messages'),
 
 ]

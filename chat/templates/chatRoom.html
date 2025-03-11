@@ -38,10 +38,10 @@
       }
     </style>
 
-    {% comment %} <script src="https://cdn.jsdelivr.net/npm/@joeattardi/emoji-button@4.6.2/dist/index.min.js"></script> {% endcomment %}
+    {% comment %}
+    <script src="https://cdn.jsdelivr.net/npm/@joeattardi/emoji-button@4.6.2/dist/index.min.js"></script>
+    {% endcomment %}
     <script src="https://cdn.jsdelivr.net/npm/@emoji-mart/react@1.0.1/dist/emoji-mart.min.js"></script>
-
-
   </head>
   <body>
     <div class="background_image">
@@ -97,6 +97,8 @@
       </div>
       {% endfor %}
     </div>
+
+    <div id="seen_status" style="display: none">Seen</div>
 
     <!-- Delete Confirmation Box -->
     <div
@@ -183,8 +185,7 @@
 
                 messageElement.innerHTML = `
           <p>${msg.text}</p>
-          <span class="timestamp">${formattedTime}</span>`
-        ;
+          <span class="timestamp">${formattedTime}</span>`;
                 chatBox.appendChild(messageElement);
               });
 
@@ -245,7 +246,7 @@
       document
         .getElementById("chatBox")
         .addEventListener("click", function (e) {
-          let messageDiv = e.target.closest(".message"); // Check karein ki click message par hi hua hai
+          let messageDiv = e.target.closest(".message");
           if (!messageDiv) return;
 
           let messageId = messageDiv.getAttribute("data-id"); // Message ID lein
@@ -310,7 +311,7 @@
         setInterval(checkTypingStatus, 1000);
       });
     </script>
-    {% comment %} TYPING STATUS {% endcomment %}    
-    
+    {% comment %} TYPING STATUS {% endcomment %} {% comment %} MESSAGE READ OR
+    UNREAD {% endcomment %}
   </body>
 </html>
