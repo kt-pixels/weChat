@@ -2,8 +2,26 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"
+      integrity="sha512-KfkfwYDsLkIlwQp6LFnl8zNdLGxu9YAA1QvwINks4PhcElQSvqcyVLLD9aMhXd13uQjoXtEKNosOWaZqXgel0g=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
+    />
     <title>Stories</title>
     <style>
+        *{
+            font-family: "Titillium Web", sans-serif;
+          font-weight: 300;
+          font-style: normal;
+        }
         .story-container {
             width: 100%;
             height: 100vh;
@@ -13,10 +31,10 @@
             align-items: center;
         }
         .story-box {
-            width: 400px;
-            height: 700px;
+            width: 100%;
+            height: 100vh;
             background: black;
-            border-radius: 15px;
+            border-radius: 0;
             overflow: hidden;
             position: relative;
         }
@@ -29,54 +47,198 @@
         .active {
             display: block !important;
         }
-        .next-btn {
+        .prev-btn, .next-btn {
             position: absolute;
             top: 50%;
-            right: 10px;
             background: rgba(255,255,255,0.5);
             border: none;
             padding: 10px;
             cursor: pointer;
+        }
+        .prev-btn { left: 10px; }
+        .next-btn { right: 10px; }
+        .story-viewers {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            transform: translateY(100%);
+            background: rgb(0 0 0 / 78%);
+            backdrop-filter: blur(4px);
+            color: white;
+            /*padding: 5px 10px;*/
+            /*border-radius: 10px;
+            display: none;*/
+            display: none;
+            font-size: 14px;
+            transition: transform 0.3s ease-in-out;
+        }
+        .story-viewers > p{
+            text-align: center;
+            margin: 0;
+            padding: 10px;
+            background-color: #126812;
+            font-weight: 600;
+            font-size: 16px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #Show_viewers{
+            position: absolute;
+            z-index: 100;
+            bottom: 1rem;
+            color: white;
+            right: 0;
+            left: 0;
+            text-align: center;
+        }
+        .owner-badge {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.6);
+            color: black;
+            padding: 5px 15px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
     <div class="story-container">
         <div class="story-box">
+            <div class="owner-badge">{{ stories.0.user.username }}</div>
+
             {% for story in stories %}
                 {% if story.image %}
-                    <img class="story-image" src="{{ story.image.url }}" alt="Story">
+                    <img class="story-image" src="{{ story.image.url }}" data-story-id="{{ story.id }}" alt="Story">
                 {% elif story.video %}
-                    <video class="story-video" autoplay>
+                    <video class="story-video" autoplay data-story-id="{{ story.id }}">
                         <source src="{{ story.video.url }}" type="video/mp4">
                     </video>
                 {% endif %}
             {% endfor %}
-            <button class="next-btn">Next</button>
+
+            <button class="prev-btn" onclick='closeViewer()'>&#9665;</button>
+            <button class="next-btn" onclick='closeViewer()'>&#9655;</button>
+            
+            {% if stories.0.user == request.user %}
+            <span class="material-symbols-outlined" id="Show_viewers">
+                visibility
+            </span>
+            {% endif %}
+            
+            <div class="story-viewers">
+                
+            </div>
         </div>
     </div>
 
     <script>
         let stories = document.querySelectorAll('.story-image, .story-video');
+        let prevBtn = document.querySelector('.prev-btn');
+        let nextBtn = document.querySelector('.next-btn');
+        let viewersBox = document.querySelector('.story-viewers');
         let index = 0;
+        let storyId = "{{ stories.0.id }}";
+        let isOwner = "{{ request.user.id }}" === "{{ stories.0.user.id }}";
         
+
         function showStory(i) {
             stories.forEach(story => story.classList.remove('active'));
+            
             if (stories[i]) {
                 stories[i].classList.add('active');
+                let storyId = stories[i].getAttribute('data-story-id'); // Story ID fetch karein
+                if (isOwner) {
+                    fetchViewers(storyId); // Sirf usi story ke viewers dikhaye
+                }
             }
         }
+
+        function fetchViewers(storyId) {
+            if (!isOwner) return; 
         
-        document.querySelector('.next-btn').addEventListener('click', () => {
+            fetch(`/stories/viewers/${storyId}/`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Invalid response");
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.is_owner) {
+                        viewersBox.innerHTML = `<p>
+                            <span class="material-symbols-outlined" id="close_viewrs" style="position: absolute; left: 10px;" onclick='closeViewer()'>
+                            visibility_off
+                            </span> Seen by
+                        </p>`; // Purane viewers ko hata diya
+        
+                        data.viewers.forEach(v => {
+                            viewersBox.innerHTML += `<p style="
+                                display: flex;
+                                justify-content: space-between;
+                                padding: 10px;
+                                padding-block: 15px;
+                                margin: 0;
+                                border-bottom: 1px solid white;
+                                background-color: #ffffff08;">
+                                <span>${v.username}</span> <span>${v.viewed_at}</span>
+                            </p>`;
+                        });
+                    }
+                })
+                .catch(error => console.error("Error fetching viewers:", error));
+        }
+        
+        
+
+        nextBtn.addEventListener('click', () => {
             index++;
             if (index >= stories.length) {
-                window.history.back(); // Last story ke baad wapas home page
+                window.history.back();
             } else {
                 showStory(index);
             }
         });
 
+        prevBtn.addEventListener('click', () => {
+            if (index > 0) {
+                index--;
+                showStory(index);
+            }
+        });
+
         showStory(0);
+
+        let closeViewers = document.getElementById('close_viewrs')
+        let showViewrs = document.getElementById('Show_viewers')
+        let viewrsData = document.querySelector('.story-viewers')
+        showViewrs.addEventListener('click', () => {
+            console.log("Show viewers clicked"); // Debugging ke liye
+        
+            viewrsData.style.display = 'block'; // Pehle display block karein
+            setTimeout(() => {
+                viewrsData.style.transform = 'translateY(0)'; // Thoda delay dekar transform apply karein
+            }, 10); 
+        
+            showViewrs.style.display = 'none';
+        });
+
+        function closeViewer(){
+            console.log("Close viewers clicked"); // Debugging ke liye
+        
+            viewrsData.style.transform = 'translateY(100%)'; // Pehle transform apply karein
+            setTimeout(() => {
+                viewrsData.style.display = 'none'; // Transition ke baad display none karein
+                showViewrs.style.display = 'block';
+            }, 350); // CSS transition se thoda zyada time (300ms transition + extra buffer)
+        }
+        
     </script>
 </body>
 </html>

@@ -5,78 +5,342 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="{% static 'css/profile.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/stylw1.css' %}" />
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
     />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"
+      integrity="sha512-KfkfwYDsLkIlwQp6LFnl8zNdLGxu9YAA1QvwINks4PhcElQSvqcyVLLD9aMhXd13uQjoXtEKNosOWaZqXgel0g=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
     <title>Profile Page</title>
+
+    <style>
+      body {
+        background-color: rgb(8, 8, 8);
+        color: white;
+        margin: 0;
+        padding: 0;
+      }
+      h1 {
+        padding: 10px;
+        margin: 0;
+        font-size: 20px;
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        justify-content: space-between;
+      }
+      .success {
+        background-color: #2c2c2c;
+        position: fixed;
+        top: 10rem;
+        left: 1rem;
+        right: 1rem;
+        padding: 10px;
+        text-align: center;
+        border-radius: 6px;
+        border: 2px solid whitesmoke;
+        height: 100px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      #close_message_box {
+        position: absolute;
+        top: -2px;
+        right: -2px;
+        border: 2px solid whitesmoke;
+        border-radius: 0px 5px;
+      }
+      .a {
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 7px;
+        background-color: #00000033;
+        border-radius: 50%;
+        border: 2px solid whitesmoke;
+        backdrop-filter: blur(12px);
+      }
+      .a > span{
+        font-size: 20px;
+      }
+
+      .cover_image{
+        background-image: url('/media/chat_theme.jpg');
+        background-position: center center;
+        background-repeat: no-repeat;
+        background-size: cover;
+        position: fixed;
+        top: 0;
+        right: 0;
+        left: 0;
+        bottom: 0;
+        z-index: -1;
+      }
+
+      .content_container_plus_info{
+        background-color:rgb(0 0 0 / 24%);
+        border-radius: 2rem 2rem 0px 0px;
+        backdrop-filter: blur(10px);
+        padding-block-end: 10px;
+      }
+      .followers_counting{
+        position: absolute;
+        left: 2rem;
+        display: flex
+    ;
+        flex-direction: column;
+        align-items: center;
+        top: 10px;
+      }
+      .following_counting{
+        position: absolute;
+        right: 2rem;
+        display: flex
+    ;
+        flex-direction: column;
+        align-items: center;
+        top: 10px;
+      }
+      .user_profile_image {
+        width: 100px !important;
+        height: 100px !important;
+        margin: 0 !important;
+        margin-block-start: -3rem !important;
+        border: 2px solid whitesmoke;
+      }
+      #media-content{
+        overflow-y: scroll;
+        background-color: rgb(0 0 0 / 24%);
+        backdrop-filter: blur(10px);
+      }
+    </style>
   </head>
   <body class="dark-color">
-    <div class="profile_details_container">
-      <div class="right_side">
-        <div class="profile_img">
-          <img
-            src="{{ profile_user.user.customuser.profile_img.url }}"
-            alt=""
-          />
-          <p>
-            {{profile_user.user.first_name}} {{profile_user.user.last_name}}
-          </p>
-          <p>{{profile_user.user.username}}</p>
-          <div class="follow">
-            <form
-              method="POST"
-              action="{% url 'follow_user' profile_user.user.username %}"
-            >
-              {% csrf_token %} {% if is_following %}
-              <button type="submit">Unlink</button>
-              {% else %}
-              <button type="submit">Link</button>
-              {% endif %}
-            </form>
-          </div>
+    <div
+      class="profile_container"
+      style="
+        margin-inline-start: 7%;
+        overflow: scroll;
+        position: relative;
+        top: 100px;
+        background-color: white;
+        padding: 20px;
+        width: 91vw;
+        box-shadow: 0 0 5px gray;
+      "
+    >
+      <h1>
+        <a href="{% url 'home_page' %}" class="a">
+          <span class="material-symbols-outlined" id="back_to_home">
+            keyboard_backspace
+          </span>
+        </a>
+
+        <a href="{% url 'home_page' %}" class="a">
+          <span class="material-symbols-outlined" id="back_to_home">
+            settings
+          </span>
+        </a>
+      </h1>
+      <div class="cover_image"></div>
+      
+      <div class="content_container_plus_info">
+        <div
+        class="user_details_div"
+        style="
+          display: flex;
+          align-items: center;
+          flex-direction: column;
+          margin-block-start: 6rem;
+          position: relative;
+        "
+      >
+        <div
+          class="user_profile_image"
+          style="background-image: url({% if profile_user.profile_img %}{{ profile_user.profile_img.url }}{% else %}{% endif %}); width: 70px; height: 70px;"
+        ></div>
+        <div class="followers_counting">
+          <span>100k</span>
+          <p>Followers</p>
+        </div>
+        <div class="users_info">
+          {% comment %} <p>
+            {{ profile_user.user.first_name }} {{ profile_user.user.last_name }}
+          </p> {% endcomment %}
+          <p>{{ profile_user.user.username }}</p>
+        </div>
+        <div class="following_counting">
+          <span>10</span>
+          <p>Following</p>
         </div>
         {% if messages %} {% for message in messages %}
-        <div class="{{ message.tags }}">{{ message }}</div>
+        <div class="{{ message.tags }}">
+          <span class="material-symbols-outlined" id="close_message_box">
+            close
+          </span>
+          {{ message }}
+        </div>
         {% endfor %} {% endif %}
-        <div class="links">
-          <ul>
-            <li>Edit Profile</li>
-            <li>Followers</li>
-            <li style="position: relative" id="notification_link">
-              Notification
-              <span id="notification-badge" class="badge"></span>
-            </li>
-            <li>Save</li>
-            <li>Theme</li>
-            <li>Logout</li>
-          </ul>
+      </div>
+
+      <div class="tabs">
+        <a href="{% url 'chat_room' profile_user.user.username %}">
+          <button class="tab-btn">
+            💬 Message
+          </button>
+        </a>
+
+        {% if request.user != profile_user.user %}
+        <form
+          method="POST"
+          action="{% url 'follow_user' profile_user.user.username %}"
+        >
+          {% csrf_token %} {% if is_following %}
+          <button
+            type="submit"
+            class="tab-btn"
+            style="
+              background-color: #b51d1d;
+            "
+          >
+            Unlink
+          </button>
+          {% else %}
+          <button
+            type="submit"
+            style="
+              background-color: #1d61b5;
+              padding-inline: 20px;
+            "
+            class="tab-btn"
+          >
+            Link
+          </button>
+          {% endif %}
+        </form>
+        {% endif %} 
+      </div>
+    </div>
+      <hr>
+
+      <div id="media-content">
+        {% for post in posts %}
+        <div
+          class="post {% if post.image %}photo-post{% elif post.video %}video-post{% endif %}"
+          onclick="openModal(
+                     {% if post.image %}'{{ post.image.url }}'{% elif post.video %}{% if post.video %}'{{ post.video.url }}'{% else %}''{% endif %}{% endif %}, 
+                     {% if post.image %}'image'{% else %}'video'{% endif %})"
+        >
+          {% if post.image %}
+          <div class="photoes_posts">
+            <img src="{{ post.image.url }}" alt="images_Post" />
+          </div>
+          {% elif post.video %}
+          <div class="videos_posts">
+            {% if post.video %}
+            <video controls>
+              <source src="{{ post.video.url }}" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+            {% endif %}
+          </div>
+          {% endif %}
+        </div>
+        {% empty %}
+        <p>No posts available.</p>
+        {% endfor %}
+      </div>
+
+      <!-- Modal Structure -->
+      <div id="postModal" class="modal" style="display: none">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <div class="modal-content">
+          <div id="modal-media"></div>
         </div>
       </div>
+     
+
     </div>
 
     <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        function updateBadgeCount() {
-          fetch("/get-notifications/")
-            .then((response) => response.json())
-            .then((data) => {
-              const badge = document.getElementById("notification-badge");
-              const unreadCount = data.notifications.length;
+      
 
-              if (unreadCount > 0) {
-                badge.textContent = unreadCount;
-                badge.style.display = "flex";
-              } else {
-                badge.style.display = "none";
-              }
-            });
+      function copyProfileLink() {
+        let copyProfileUrl = window.location.href;
+        navigator.clipboard
+          .writeText(copyProfileUrl)
+          .then(() => {
+            alert("Profile link copied");
+          })
+          .catch((err) => {
+            console.error("Failed to copy: ", err);
+          });
+      }
+
+      const closeMessageBox = document.getElementById("close_message_box");
+      const messageBox = document.querySelector(".success");
+
+      closeMessageBox.addEventListener("click", () => {
+        messageBox.style.display = "none";
+      });
+    </script>
+
+    <script>
+      function openModal(mediaUrl, type) {
+        let modal = document.getElementById("postModal");
+        let modalContent = document.getElementById("modal-media");
+
+        // Remove previous content
+        modalContent.innerHTML = "";
+
+        // Agar post ek image hai toh image dikhaye, nahi toh video
+        if (type === "image") {
+          let img = document.createElement("img");
+          img.src = mediaUrl;
+          modalContent.appendChild(img);
+        } else if (type === "video") {
+          let video = document.createElement("video");
+          video.src = mediaUrl;
+          video.controls = true;
+          modalContent.appendChild(video);
         }
-        setInterval(updateBadgeCount, 1000);
 
-        document.getElementById('notification_link').addEventListener('click', () => {
-          window.location.href = '{% url "all_notifications" %}'
-        })
+        // Show modal
+        modal.style.display = "flex";
+      }
+
+      function closeModal() {
+        document.getElementById("postModal").style.display = "none";
+      }
+
+      // Close modal when user clicks outside the content
+      window.onclick = function (event) {
+        let modal = document.getElementById("postModal");
+        if (event.target === modal) {
+          closeModal();
+        }
+      };
+
+      // Close modal when user presses Escape key
+      document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+          closeModal();
+        }
       });
     </script>
   </body>

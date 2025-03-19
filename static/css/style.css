@@ -79,20 +79,19 @@
 }
 #ChatForm > div {
   width: 100%;
-  display: flex
-;
+  display: flex;
   background-color: #ffffff38;
   padding: 5px;
   border-radius: 10px 0px 0px 10px;
   gap: 10px;
 }
-#ChatForm > div > input::placeholder{
+#ChatForm > div > input::placeholder {
   color: white;
 }
-#ChatForm > div > input:focus-within{
+#ChatForm > div > input:focus-within {
   color: white;
 }
-#ChatForm > div > input:focus{
+#ChatForm > div > input:focus {
   outline: none;
 }
 #ChatForm > div > button:nth-child(2) {
@@ -101,21 +100,25 @@
   color: white;
 }
 
-
 /* user profile page style */
 .tabs {
   display: flex;
   gap: 20px;
-  margin-bottom: 10px;
+  margin-bottom: 25px;
   margin-top: 20px;
+  align-items: center;
+  justify-content: center;
 }
 
 .tab-btn {
-  padding: 10px 20px;
-  border: none;
+  padding: 8px 12px;
+  border: 2px solid whitesmoke;
   cursor: pointer;
-  background: lightgray;
+  color: white;
+  background: #d3d3d32e;
   transition: all 0.3s ease;
+  border-radius: 20px;
+  box-shadow: 0 0 9px #00000075;
 }
 
 .tab-btn.active {
@@ -161,12 +164,12 @@
   overflow: hidden;
 }
 
-.post img, .post video {
+.post img,
+.post video {
   width: 100%;
   height: 100%;
   object-fit: cover; /* Ensure content fits perfectly */
 }
-
 
 /* Modal Background */
 .modal {
@@ -205,7 +208,8 @@
 }
 
 /* Image & Video Styling */
-#modal-media img, #modal-media video {
+#modal-media img,
+#modal-media video {
   width: 100%;
   height: auto;
   max-height: 80vh;
@@ -213,24 +217,28 @@
 }
 
 @media only screen and (max-width: 420px) {
-  .profile_container{
+  .profile_container {
     margin: 0 !important;
     width: 100vw !important;
     box-shadow: none !important;
-    background-color: #ffffff2e !important;
-    top: 60px !important;
+    background-color: #ffffff12 !important;
+    top: 0px !important;
+    position: absolute !important;
+    bottom: 0;
+    padding: 0 !important;
   }
-.users_info{
-  color: white;
-}
-#media-content {
-  grid-template-columns: repeat(3, 1fr); /* 3 columns even on mobile */
-}
-.photoes_posts > img {
-  border-radius: 0;
-}
-.photoes_posts > video {
-  border-radius: 0;
-}
-
+  .users_info {
+    color: white;
+    text-align: center;
+    margin-block-start: 20px;
+  }
+  #media-content {
+    grid-template-columns: repeat(3, 1fr); /* 3 columns even on mobile */
+  }
+  .photoes_posts > img {
+    border-radius: 0;
+  }
+  .photoes_posts > video {
+    border-radius: 0;
+  }
 }

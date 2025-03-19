@@ -100,6 +100,17 @@ DATABASES = {
     }
 }
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'wechatter',   # Aapka MySQL Database Name
+#         'USER': 'root',         # Aapka MySQL Username
+#         'PASSWORD': 'My$QL@2024secureSHA',  # MySQL ka password
+#         'HOST': 'localhost',    # Agar remote host ho to uska IP ya domain likhein
+#         'PORT': '3306',         # Default MySQL port
+#     }
+# }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators

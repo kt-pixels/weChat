@@ -10,16 +10,16 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Titillium+Web:ital,wght@0,200;0,300;0,400;0,600;0,700;0,900;1,200;1,300;1,400;1,600;1,700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100..900&family=Titillium+Web:wght@200;300;400;600;700&display=swap"
       rel="stylesheet"
     />
-    <title>Chat with</title>
+    <title>Chat Room</title>
     <style>
       a {
         text-decoration: none;
       }
       body {
-        background: #222230;
+        background: #080808;
         margin: 0;
         padding: 0;
         font-family: "Titillium Web", sans-serif;
@@ -51,6 +51,7 @@
         display: flex;
         align-items: center;
         gap: 10px;
+        background-color: black;
       }
 
       .notifications_container > h1 > p {
@@ -62,7 +63,7 @@
 
       .notification {
         padding: 10px;
-        background-color: #ffffff30;
+        background-color: #ffffff14;
         display: flex;
         gap: 10px;
         position: relative;
@@ -106,36 +107,48 @@
 
       .chat_icon {
         color: white;
-        background-color: #4c4c4c;
-        position: absolute;
-        padding: 5px;
-        width: 30px;
+        background-color:rgba(255, 255, 255, 0.21);
+        position: fixed;
+        padding: 0px;
+        width: 40px;
+        height: 40px;
         display: flex;
         justify-content: center;
         align-items: center;
-        border-radius: 5px;
+        border-radius: 18%;
         bottom: 20px;
         right: 20px;
         z-index: 1000;
+        border: 2px solid whitesmoke;
+      }
+      #loading {
+        color: white;
+        padding: 20px;
+        text-align: center;
+      }
+      #data-container {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
       }
     </style>
   </head>
-  <body class="dark-color">
+  <body>
     <div class="notifications_container">
       <h1>
-        <span class="material-symbols-outlined" id="back_to_home">
-          keyboard_backspace
-        </span>
+        <span class="material-symbols-outlined" id="back_to_home"
+          >keyboard_backspace</span
+        >
         <p>Chat Room</p>
       </h1>
       <div id="data-container">
-        <!-- Yeh block dynamically AJAX se update hoga -->
+        <p id="loading">Loading...</p>
       </div>
     </div>
 
     <a href="{% url 'followed_users' %}">
       <div class="chat_icon">
-        <span class="material-symbols-outlined"> chat </span>
+        <span class="material-symbols-outlined">chat</span>
       </div>
     </a>
 
@@ -143,59 +156,58 @@
       document.getElementById("back_to_home").addEventListener("click", () => {
         window.location.href = "/";
       });
-    </script>
 
-    <script>
-      document.addEventListener("DOMContentLoaded", function refreshPageData() {
-        const container = document.getElementById("data-container");
+      function fetchChatData() {
+        fetch("/message-to/", {
+          headers: { "X-Requested-With": "XMLHttpRequest" },
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            const container = document.getElementById("data-container");
+            container.innerHTML = "";
 
-        if (container) {
-          fetch("/message-to/", {
-            headers: { "X-Requested-With": "XMLHttpRequest" }, // AJAX request ko identify karne ke liye
+            if (data.user_message_data.length === 0) {
+              container.innerHTML =
+                "<p style='color:white; text-align:center;'>No chats yet</p>";
+              return;
+            }
+
+            data.user_message_data.forEach((item) => {
+              const chatItem = document.createElement("a");
+              chatItem.href = `/chat/${item.username}/`;
+              chatItem.className = "notification";
+
+              const profileImg = item.profile_img || "/media/users/default.png"; // Default image if not available
+
+              chatItem.innerHTML = `
+                            <div class="notifications_img" style="background-image: url(${profileImg});"></div>
+                            <div class="notify">
+                                <p class="username">
+                                    ${item.username}
+                                    ${
+                                      item.unread_count > 0
+                                        ? `<span class="unread-badge">${item.unread_count}</span>`
+                                        : ""
+                                    }
+                                </p>
+                                <p class="latest-message">
+                                    ${item.latest_message}
+                                    <span>${item.timestamp || ""}</span>
+                                </p>
+                            </div>
+                        `;
+              container.appendChild(chatItem);
+            });
           })
-            .then((response) => response.json())
-            .then((data) => {
-              // Container ko clear karein
-              container.innerHTML = "";
+          .catch((error) => {
+            console.error("Error fetching data:", error);
+            document.getElementById("data-container").innerHTML =
+              "<p style='color:red; text-align:center;'>Failed to load chats</p>";
+          });
+      }
 
-              // Data ko loop mein display karein
-              data.user_message_data.forEach((item) => {
-                const notification = document.createElement("div");
-                const chatOpening = document.createElement("a");
-                chatOpening.href = `/chat/${item.username}/`;
-                notification.className = "notification";
-
-                notification.innerHTML = `
-                        <div class="notifications_img" 
-                             style="background-image: url(${
-                               item.profile_img
-                             });">
-                        </div>
-                        <div class="notify">
-                            <p class="username">
-                                ${item.username}
-                                ${
-                                  item.unread_count > 0
-                                    ? `<span class="unread-badge">${item.unread_count}</span>`
-                                    : ""
-                                }
-                            </p>
-                            <p class="latest-message">
-                                ${item.latest_message}
-                                <span>${item.timestamp || ""}</span>
-                            </p>
-                        </div>
-                    `;
-
-                chatOpening.appendChild(notification);
-                container.appendChild(chatOpening);
-              });
-            })
-            .catch((error) => console.error("Error fetching data:", error));
-
-          setTimeout(refreshPageData, 1000); // Har second mein auto-refresh kare
-        }
-      });
+      fetchChatData();
+      setInterval(fetchChatData, 2000); // Data refresh every 5 sec instead of 1 sec
     </script>
   </body>
 </html>

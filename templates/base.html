@@ -21,6 +21,110 @@
     <title>WeChatter</title>
 
     <style>
+        body {
+          background: #222230;
+          margin: 0;
+          padding: 0;
+          font-family: "Titillium Web", sans-serif;
+          font-weight: 300;
+          font-style: normal;
+        }
+        .notifications_img {
+          width: 40px;
+          height: 40px;
+          background-position: center center;
+          background-repeat: no-repeat;
+          background-size: cover;
+          border-radius: 50%;
+          border: 2px solid #0072ff;
+        }
+  
+        .notifications_container {
+          display: flex;
+          flex-direction: column;
+          gap: 1px;
+        }
+  
+        .notifications_container > h1 {
+          padding: 10px;
+          margin: 0;
+          font-size: 20px;
+          color: white;
+          box-shadow: 0 0 10px black;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+  
+        .notifications_container > h1 > p {
+          margin: 0;
+        }
+        .notifications_container > a {
+          text-decoration: none;
+        }
+  
+        .notification {
+          padding: 10px;
+          background-color: #ffffff1a;
+          display: flex;
+          gap: 10px;
+          position: relative;
+        }
+  
+        .notification.unread {
+          background-color: #e3f2fd7a;
+          font-weight: bold;
+        }
+  
+        .notification > .notify > p {
+          color: white;
+          text-decoration: none;
+          margin: 0;
+        }
+        .notification > .notify > p > span {
+          font-size: 10px;
+          position: absolute;
+          right: 8px;
+          top: 7px;
+          width: 60px;
+        }
+        .unread-badge {
+          font-size: 10px;
+          position: absolute;
+          background-color: #0072ff;
+          color: #fff;
+          border-radius: 50%;
+          padding: 2px 8px;
+          margin-left: 5px;
+          font-weight: bold;
+          top: 38px !important;
+          width: 10px !important;
+        }
+  
+        .notify {
+          display: flex;
+          flex-direction: column;
+          justify-content: space-evenly;
+          font-size: 14px;
+        }
+  
+        .chat_icon {
+          color: white;
+          background-color: #4c4c4c;
+          position: absolute;
+          padding: 5px;
+          width: 30px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          border-radius: 5px;
+          bottom: 20px;
+          right: 20px;
+          z-index: 1000;
+        }
+        .notify .username:nth-child(1){
+          text-transform: capitalize;
+        }
       .modal {
         display: none;
         position: fixed;
@@ -89,6 +193,63 @@
         right: 2px;
         display: none;
       }
+      .search_container{
+        display: none;
+        background-color: #ffffff26;
+        border-radius: 5px;
+        border: 2px solid #ffffff59;
+        padding: 5px;
+      }
+      .search_container > input{
+        width: 100%;
+        border: none;
+        padding-inline-start: 10px;
+        background-color: transparent;
+        color: white;
+      }
+      .search_container > button{
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        background-color: transparent;
+        color: white;
+      }
+      .search_container > input:focus{
+        outline: none;
+      }
+      .search_container > input::placeholder{
+        color: white;
+      }
+      .search_result{
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #2b2c44;
+        z-index: 100;
+        padding-block-start: 60px;
+        flex-direction: column;
+        gap: 1px;
+      }
+      .single-stories > a{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        color: white;
+        text-decoration: none;
+        font-size: 8px;
+        gap: 2px;
+      }
+      .single-stories > a > .user_profile_image{
+        margin: 0;
+        width: 60px !important;
+        height: 60px !important;
+        border-radius: 50%;
+        border: 2px solid #00a1ff;
+      }
     </style>
   </head>
   <body class="dark-color">
@@ -128,10 +289,14 @@
             <span id="message-badge" class="badge"></span>
         </a>
           
+        <span class="material-symbols-outlined" id="search_btn">
+          search
+          </span>
+      
           
             <div
               style="
-                display: flex;
+                display: none;
                 justify-content: center;
                 align-items: center;
               "
@@ -142,11 +307,11 @@
                   </span>
               </label>
             </div>
-            <a href="{% url 'main_user_profile' request.user.username %}">
+            <a href="{% url 'user_profile' request.user.username %}">
               <div
                 class="user_profile_image"
                 style="background-image: url({% if custom_user.profile_img %}{{ custom_user.profile_img.url }}{% else %}
-                '/media/weChat.png'
+                '/media/default.png'
                 {% endif %});"
               ></div>
 
@@ -156,12 +321,25 @@
             </a>
           </div>
         </div>
+
+        {% comment %} SEARCH INPUT {% endcomment %}
+        <div class="search_container">
+          <input id="myInput_Search" type="text" name="q" placeholder="Search..." autofocus>
+          <button>
+            <span class="material-symbols-outlined" id="close_search_bar">
+              close
+              </span>
+          </button>
+        </div>
       </div>
+      
     </header>
     <!-- header section end -->
 
     {% block content %}
+    
     <div class="home">
+      <div class="search_result"></div>
       <div class="container">
         <div class="home-weapper">
           <!-- home left start here -->
@@ -225,46 +403,30 @@
                     </a>
                   </div>
 
-                  {% for user , stories in user_stories.items %}
-                  <div class="single-stories">
-                    <label>
-                      <div
-                        class="user_profile_image"
-                        style="background-image: url({% if user.customuser.profile_img %}{{ user.customuser.profile_img.url }}{% else %}
-                        '/media/weChat.png'
-                        {% endif %});"
-                      ></div>
-                    </label>
-                    <div class="story-container border-50">
-                      {% for story in stories %}
-                      <a
-                        href="#"
-                        class="story-link"
-                        data-index="{{ forloop.counter0 }}"
-                        data-user-id="{{ story.user.id }}"
-                        data-image-url="{% if story.image %}{{ story.image.url }}{% endif %}"
-                        data-video-url="{% if story.video %}{{ story.video.url }}{% endif %}"
-                      >
-                        <div class="story">
-                          {% if story.image %}
-                          <img src="{{ story.image.url }}" alt="Story Image" />
-                          {% elif story.video %}
-                          <video
-                            id="story-{{ forloop.counter }}"
-                            data-user-id="{{ story.user.id }}"
-                          >
-                            <source
-                              src="{{ story.video.url }}"
-                              type="video/mp4"
-                            />
-                          </video>
-                          {% endif %}
-                        </div>
-                      </a>
+                  {% if user_story %}  
+                      <div class="single-stories">
+                          <a href="{% url 'story_view' request.user.id %}">
+                              <div class="user_profile_image"
+                                  style="background-image: url({% if request.user.customuser.profile_img %}{{ request.user.customuser.profile_img.url }}{% else %} '/media/default.png' {% endif %});">
+                              </div>
+                              <p>{{ request.user.username }}</p>
+                          </a>
+                      </div>
+                  {% endif %}
+
+                  {% if user_stories %}  
+                      {% for user, stories in user_stories.items %}
+                          <div class="single-stories">
+                              <a href="{% url 'story_view' user.id %}">
+                                  <div class="user_profile_image"
+                                      style="background-image: url({% if user.customuser.profile_img %}{{ user.customuser.profile_img.url }}{% else %} '/media/default.png' {% endif %});">
+                                  </div>
+                                  <p>{{ user.username }}</p>
+                              </a>
+                          </div>
                       {% endfor %}
-                    </div>
-                  </div>
-                  {% endfor %}
+                  {% endif %}
+
                 </div>
               </div>
 
@@ -283,10 +445,6 @@
                 <div class="fb-post1-container">
                   <div class="fb-p1-main">
                     <div class="post-title">
-                      {% comment %} <img
-                        src="{{ post.user.customuser.profile_img.url }}"
-                        alt="user picture"
-                      /> {% endcomment %}
                       <div
                         class="user_profile_image"
                         style="background-image: url({% if post.user.customuser.profile_img %}{{ post.user.customuser.profile_img.url }}{% else %}
@@ -320,36 +478,38 @@
                         </video>
                       </div>
                       {% endif %}
-                      <p>{{ post.caption }}</p>
 
                     <div class="like-comment">
-                      <div class="input">
-                        <input type="text" placeholder="Add your comment...">
-                      <span class="material-symbols-outlined">
-                        send
-                        </span>
-                      </div>
                       <ul>
                         <li>
                           <span class="material-symbols-outlined">
                             favorite
                             </span>
-                          {% comment %} <span>{{ post.likes }} like</span> {% endcomment %}
+                            <span>0</span>
                         </li>
                         <li>
                           <span class="material-symbols-outlined">
                             comment
                             </span>
-                          {% comment %} <span>{{ post.comments.count }} comments</span> {% endcomment %}
+                            <span>0</span>
                         </li>
                         <li>
                           <span class="material-symbols-outlined">
                             share
                             </span>
-                          {% comment %} <span>{{ post.shares }} share</span> {% endcomment %}
+                            <span>0</span>
+                        </li>
+                      </ul>
+                      <ul>
+                        
+                        <li>
+                          <span class="material-symbols-outlined">
+                            bookmark
+                            </span>
                         </li>
                       </ul>
                     </div>
+                    <p>{{ post.caption }}</p>
                   </div>
                 </div>
               </div>
@@ -509,17 +669,20 @@
               .then(response => response.json())
               .then(data => {
                   const badge = document.getElementById('notification-badge');
+                  if (!badge) return;
+      
                   const unreadCount = data.notifications.length;
-                  
+      
                   if (unreadCount > 0) {
                       badge.textContent = unreadCount;
                       badge.style.display = 'flex';
                   } else {
-                      badge.style.display = 'none';
+                      badge.style.display = 'none';  // Yaha else best practice hai
                   }
-              });
-      }
-      setInterval(updateBadgeCount, 1000);
+              })
+              .catch(error => console.error('Error fetching notifications:', error));
+        }
+        setInterval(updateBadgeCount, 1000);
       });
     </script>
 
@@ -544,6 +707,77 @@
       // Har second mein badge count update karne ke liye
       setInterval(updateMessageBadgeCount, 1000);
       })    
+    </script>
+
+    <script>
+      const searchBtnOpen = document.querySelector('#search_btn')
+      const searchBtnClose = document.querySelector('#close_search_bar')
+      const headerWrapper = document.querySelector('.header-wrapper')
+      const searchContainer = document.querySelector('.search_container')
+      const searchResults = document.querySelector('.search_result')
+      const my_input = document.getElementById("myInput_Search")
+
+      searchBtnOpen.addEventListener('click', () => {
+        if (searchContainer.style.display === 'none' || searchContainer.style.display === ''){
+          searchContainer.style.display = 'flex'
+          searchResults.style.display = 'flex'
+          headerWrapper.style.display = 'none'
+        }
+      })
+      searchBtnClose.addEventListener('click', () => {
+        if (searchContainer.style.display === 'flex'){
+          searchContainer.style.display = 'none'
+          searchResults.style.display = 'none'
+          headerWrapper.style.display = 'flex'
+          my_input.value = ""
+          searchResults.innerHTML =''
+        }
+      })
+
+      my_input.addEventListener('input', function () {
+        const query = this.value.trim();
+        const searchResultContainer = document.querySelector('.search_result');
+    
+        if (query.length === 0) {
+            searchResultContainer.innerHTML = "";
+            return;
+        }
+    
+        fetch(`/search-users/?q=${query}`)
+            .then(response => response.json())
+            .then(data => {
+                searchResultContainer.innerHTML = "";
+    
+                if (data.users.length > 0) {
+                    data.users.forEach(user => {
+                        const div = document.createElement('div');
+                        div.classList.add("users_data_container");
+                        div.innerHTML = `
+                            <a href="/profile/${user.username}/">
+                                <div class="notification">
+                                    <div class="notifications_img" 
+                                         style="background-image: url('${user.profile_img}');">
+                                    </div>
+                                    <div class="notify">
+                                        <p class="username">${user.first_name} ${user.last_name}</p>
+                                        <p class="username">${user.username}</p>
+                                    </div>
+                                </div>
+                            </a>
+                        `;
+                        searchResultContainer.appendChild(div);
+                    });
+                } else {
+                    searchResultContainer.innerHTML = `<li style="
+    padding: 10px;
+    background: #ffffff14;
+    color: white;
+    text-align: center;
+">No users found</li>`;
+                }
+            })
+            .catch(error => console.error("Error fetching search results:", error));
+      });    
     </script>
 
     {% block scripting %}{% endblock %}

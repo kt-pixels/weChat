@@ -22,12 +22,14 @@ urlpatterns = [
 
     # 
     # path('user-profile/', views.user_profile, name='user_profile'),
-    path('profile/<str:username>/', views.user_profile, name='user_profile'),
-    path('user-profile/<str:username>/', views.profile, name='main_user_profile'),
+    # path('profile/<str:username>/', views.user_profile, name='user_profile'),
+    path('profile/<str:username>/', views.profile, name='user_profile'),
 
     # CReate post link
     path('create-post/', views.create_post, name='create_post'),
     path('create-story/', views.create_story, name='create_stroy'),
+    path('stories/<int:user_id>/', views.story_view, name='story_view'),
+    path('stories/viewers/<int:story_id>/', views.get_story_viewers, name='get_story_viewers'),
 
     # 
     # path('stories/<int:user_id>/', views.user_stories_view, name='user_stories'),
@@ -42,5 +44,6 @@ urlpatterns = [
     path('message-to/', views.followers_message_room, name="message_room"),
     path('followers/', views.followers_view, name="followed_users"),
     path('get-unread-messages/', views.get_unread_messages, name='get_unread_messages'),
+    path('search-users/', views.search_users, name='search_users'),
 
 ]

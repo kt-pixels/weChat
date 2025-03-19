@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Create a New Group</h2>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <label>Group Name:</label>
+    <input type="text" name="name" required>
+    <br>
+    <label>Group Image:</label>
+    <input type="file" name="image">
+    <br>
+    <label>Select Members:</label>
+    <div id="selected-members"></div>
+    <select name="members" multiple id="member-select">
+        {% for user in users %}
+        <option value="{{ user.id }}">{{ user.username }}</option>
+        {% endfor %}
+    </select>
+    <br>
+    <button type="submit">Create Group</button>
+</form>
+<script>
+    document.getElementById('member-select').addEventListener('change', function() {
+        let selectedDiv = document.getElementById('selected-members');
+        selectedDiv.innerHTML = "";
+        Array.from(this.selectedOptions).forEach(option => {
+            let div = document.createElement('div');
+            div.textContent = option.text;
+            selectedDiv.appendChild(div);
+        });
+    });
+</script>
+{% endblock %}

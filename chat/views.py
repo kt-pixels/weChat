@@ -2,11 +2,11 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
-from .models import ChatRoom, Message, Follow, Post, Story, CustomUser, Notification
+from .models import ChatRoom, Message, Follow, Post, Story, CustomUser, Notification, StoryView
 from django.http import JsonResponse
 from .forms import PostForm, StoryForm
 from datetime import timedelta
-from django.utils.timezone import now
+from django.utils.timezone import now, localtime
 import random
 from django.db.models import Max, Q
 from django.contrib import messages
@@ -112,7 +112,6 @@ def home_page(request):
     if request.user.is_authenticated:
         users = User.objects.exclude(id=request.user.id).select_related('customuser')
 
-        # Try to get CustomUser, agar nahi mile to None assign kar do
         try:
             user = CustomUser.objects.get(user=request.user)
         except CustomUser.DoesNotExist:
@@ -123,32 +122,34 @@ def home_page(request):
 
     notification_unread = Notification.objects.filter(user=request.user, is_read=False).count()
 
-     # Active stories (only stories which are not older than 24 hours)
+    # Active stories filter karein (24 hours ke andar wali)
     followed_users = User.objects.filter(followers__follower=request.user)
-    active_stories = Story.objects.filter(user__in=followed_users ,created_at__gte=now() - timedelta(hours=24))
+    active_stories = Story.objects.filter(
+        user__in=followed_users,
+        created_at__gte=now() - timedelta(hours=24)
+    )
 
-    # User ne dekhi ya nahi dekhi, us basis par sort karein
+    # Stories ko unseen aur seen ke basis pe alag karein
     unseen_stories = []
     seen_stories = []
 
-    # Grouping stories by user
-    # user_stories = {}
-
     for story in active_stories:
         if request.user not in story.viewers.all():
-            seen_stories.append(story)
+            unseen_stories.append(story)  # Unseen pehle rakhein
         else:
-            unseen_stories.append(story)
+            seen_stories.append(story)
 
-    # Unseen stories pehle aur seen stories baad me dikhayenge
     sorted_stories = unseen_stories + seen_stories
 
-    # Stories ko group karna users ke basis par
+    # Sirf un users ko dikhayein jinke paas active stories hain
     user_stories = {}
     for story in sorted_stories:
         if story.user not in user_stories:
             user_stories[story.user] = []
         user_stories[story.user].append(story)
+
+    # **Current user ki active stories bhi fetch karein**
+    user_story = Story.objects.filter(user=request.user, created_at__gte=now() - timedelta(hours=24))
 
     latest_post = Post.objects.order_by('-created_at')[:10]
     all_post = list(Post.objects.all())
@@ -156,7 +157,8 @@ def home_page(request):
     random_post = all_post[:10]
 
     context = {
-        'user_stories': user_stories,
+        'user_story': user_story,  # Sirf active stories
+        'user_stories': user_stories,  # Sirf unke jo stories upload kar chuke hain
         "users": users, 
         "custom_user": user,
         "latest_posts": latest_post,
@@ -266,7 +268,7 @@ def follow_user(request, username):
 
     if user_to_follow == request.user:
         messages.error(request, "You cannot follow yourself.")
-        return redirect('main_user_profile', username=username)
+        return redirect('user_profile', username=username)
     
     follow, created = Follow.objects.get_or_create(follower=request.user, following=user_to_follow)
 
@@ -281,7 +283,7 @@ def follow_user(request, username):
         )
         messages.success(request, f"You are now following {user_to_follow.username}")
 
-    return redirect('main_user_profile', username=username)
+    return redirect('user_profile', username=username)
 
 # Post view
 def create_post(request):
@@ -310,6 +312,47 @@ def create_story(request):
         form = StoryForm()
     
     return render(request, 'create_story.html', {"form": form}) 
+
+@login_required
+def story_view(request, user_id):
+    twenty_four_hours_ago = now() - timedelta(hours=24)
+    stories = Story.objects.filter(user_id=user_id, created_at__gte=twenty_four_hours_ago).order_by('created_at')
+    
+    if stories.exists():
+        for story in stories:
+            if story.user != request.user:  # Apni khud ki story dekhne par count na ho
+                story_view, created = StoryView.objects.get_or_create(story=story, viewer=request.user)
+                if created:  # Agar naya entry bani hai tabhi timestamp update karein
+                    story_view.viewed_at = now()
+                    story_view.save()
+
+    return render(request, 'stories_view.html', {'stories': stories})
+
+@login_required
+def get_story_viewers(request, story_id):
+    story = Story.objects.get(id=story_id)
+
+    story_views = StoryView.objects.filter(story=story).exclude(viewer=story.user).select_related('viewer') #Owner ko exclude kr diya
+
+    viewers_data = []
+    current_time = now()
+
+    for view in story_views:
+        local_time = localtime(view.viewed_at)
+        if local_time.date() == current_time.date():
+            viewed_time = local_time.strftime("%I:%M %p")
+        elif local_time.date() == (current_time.date() - timedelta(days=1)):
+            viewed_time = f"Yesterday {local_time.strftime('%I:%M %p')}"
+        else:
+            viewed_time = local_time.strftime("%d %b %Y, %I:%M %p")
+
+        viewers_data.append({
+            "username": view.viewer.username,
+            "profile_img": view.viewer.customuser.profile_img.url if view.viewer.customuser.profile_img else "/media/users/default.png",
+            "viewed_at": viewed_time
+        })
+    
+    return JsonResponse({'viewers': viewers_data, 'is_owner': request.user == story.user})
 
 # EDIT PROFILE
 def edit_user_profile(request):
@@ -377,8 +420,15 @@ def user_profile(request, username):
 
 def profile(request, username):
     profile_user = get_object_or_404(CustomUser, user__username=username)
-    is_following = Follow.objects.filter(follower=request.user, following=profile_user.user)
-    return render(request, 'profile.html', {"profile_user" : profile_user, "is_following": is_following})
+    is_following = Follow.objects.filter(follower=request.user, following=profile_user.user).exists()
+    media_type = request.GET.get('media', 'photo')
+
+    if media_type == 'video':
+        posts = Post.objects.filter(user=profile_user.user, video__isnull=False).order_by('-created_at')
+    else:
+        posts = Post.objects.filter(user=profile_user.user, image__isnull=False).order_by('-created_at')
+    # return render(request, 'profile.html', {"profile_user" : profile_user, "is_following": is_following})
+    return render(request, 'profile.html', {"posts": posts, "profile_user": profile_user, "media_type": media_type ,"is_following": is_following})
 
 # GET NOTIFICATION
 def get_notifications(request):
@@ -409,14 +459,11 @@ def notifications_view(request):
 
 # MESSAGE ROOM
 def followers_message_room(request):
-    followed_users = User.objects.filter(followers__follower=request.user)
+    chatrooms = ChatRoom.objects.filter(Q(user1=request.user) | Q(user2=request.user))
 
     # Latest messages ko fetch karein (User1 ya User2 ke hisaab se check karna hoga)
     latest_messages = (
-        Message.objects.filter(
-            Q(chatroom__user1__in=followed_users, chatroom__user2=request.user) |
-            Q(chatroom__user2__in=followed_users, chatroom__user1=request.user)
-        )
+        Message.objects.filter(chatroom__in=chatrooms)
         .values('chatroom__user1', 'chatroom__user2')
         .annotate(latest_time=Max('timestamp'))
         .order_by('-latest_time')
@@ -429,29 +476,32 @@ def followers_message_room(request):
         user_id = msg['chatroom__user1'] if msg['chatroom__user1'] != request.user.id else msg['chatroom__user2']
 
         # User ka detail fetch karen
-        user = User.objects.get(id=user_id)
-        latest_message = Message.objects.filter(
-            Q(chatroom__user1=user, chatroom__user2=request.user) |
-            Q(chatroom__user2=user, chatroom__user1=request.user)
-        ).order_by('-timestamp').first()
+        try:
+            user = User.objects.get(id=user_id)
+            latest_message = Message.objects.filter(
+                Q(chatroom__user1=user, chatroom__user2=request.user) |
+                Q(chatroom__user2=user, chatroom__user1=request.user)
+            ).order_by('-timestamp').first()
 
-        user_message_data.append({
-            'username': user.username,
-            'profile_img': user.customuser.profile_img.url,
-            'latest_message': Truncator(latest_message.text).chars(30) if latest_message else "No messages yet",
-            'timestamp': latest_message.timestamp.strftime("%d/%m/%Y, %H:%M") if latest_message else None,
-            'unread_count': Message.objects.filter(
-                Q(chatroom__user1=user, chatroom__user2=request.user, is_read=False) |
-                Q(chatroom__user2=user, chatroom__user1=request.user, is_read=False)
-            ).exclude(sender=request.user).count()
-        })
+            user_message_data.append({
+                'username': user.username,
+                'profile_img': user.customuser.profile_img.url  if hasattr(user, 'customuser') else '/media/users/default.png',
+                'latest_message': Truncator(latest_message.text).chars(30) if latest_message else "No messages yet",
+                'timestamp': latest_message.timestamp.strftime("%d/%m/%Y, %H:%M") if latest_message else None,
+                'unread_count': Message.objects.filter(
+                    Q(chatroom__user1=user, chatroom__user2=request.user, is_read=False) |
+                    Q(chatroom__user2=user, chatroom__user1=request.user, is_read=False)
+                ).exclude(sender=request.user).count()
+            })
+        except User.DoesNotExist:
+            continue
 
-    # JSON Response for AJAX request
+    # 🔹 Latest message ke basis par sorting
+    user_message_data.sort(key=lambda x: x['timestamp'], reverse=True)
+
+    # 🔹 AJAX request ka JSON response
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return JsonResponse({'user_message_data': user_message_data})
-
-    # Latest message ke basis par sorting
-    user_message_data.sort(key=lambda x: x['timestamp'], reverse=True)
 
     return render(request, 'messageTo.html', {"user_message_data": user_message_data})
 
@@ -464,19 +514,54 @@ def get_unread_messages(request):
         return JsonResponse({'unread_messages': unread_messages})
     return JsonResponse({'unread_messages': 0})
 
-# def get_unread_messages(request):
-#     if request.user.is_authenticated:
-#         # Sirf current user ke unread messages ko count karein
-#         unread_messages = Message.objects.filter(
-#             receiver=request.user, 
-#             is_read=False
-#         ).count()
-
-#         return JsonResponse({'unread_messages': unread_messages})
-#     else:
-#         return JsonResponse({'unread_messages': 0})
-
 # FOLLOWERS
 def followers_view(request):
     followed_users = Follow.objects.filter(follower=request.user).select_related('following')
     return render(request, 'followers.html', {'followed_users': followed_users})
+
+
+# SEARCH
+def search_users(request):
+    query = request.GET.get("q", "")
+    if query:
+        users = (
+            User.objects.filter(first_name__icontains=query) | 
+            User.objects.filter(username__icontains=query)
+        ).exclude(id=request.user.id)
+        
+        user_list = []
+        for user in users:
+            custom_user = CustomUser.objects.filter(user=user).first()
+            profile_img_url = custom_user.profile_img.url
+
+            user_list.append({
+                'id': user.id,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'username': user.username,
+                'profile_img': profile_img_url
+            })
+    else:
+        user_list = []
+
+    return JsonResponse({'users': user_list})
+
+
+# 
+# @login_required
+# def create_group(request):
+#     if request.method == "POST":
+#         name = request.POST.get("name")
+#         image = request.FILES.get("image")
+#         selected_users = request.POST.getlist("members")
+        
+#         if name:
+#             group = Group.objects.create(name=name, image=image, admin=request.user)
+#             GroupMembership.objects.create(user=request.user, group=group, role='admin')
+#             for user_id in selected_users:
+#                 user = User.objects.get(id=user_id)
+#                 GroupMembership.objects.create(user=user, group=group, role='member')
+#             return redirect("group_list")
+    
+#     users = User.objects.exclude(id=request.user.id)
+#     return render(request, "groups/create_group.html", {"users": users})

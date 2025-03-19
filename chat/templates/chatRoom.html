@@ -36,6 +36,28 @@
       .background_image > img {
         width: 100%;
       }
+
+      #chatBox {
+        position: fixed;
+        top: 60px; /* Header ke just neeche start hoga */
+        bottom: 60px; /* Input field ke just upar tak */
+        left: 0;
+        right: 0;
+        overflow-y: auto; /* Sirf ye scroll hoga */
+        padding: 10px;
+      }
+
+      form {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(0, 0, 0, 0.8);
+        padding: 10px;
+        display: flex;
+        align-items: center;
+      }
+      
     </style>
 
     {% comment %}
@@ -64,6 +86,7 @@
         z-index: 10;
         font-size: 20px;
         text-transform: capitalize;
+        height: 30px;
       "
     >
       <span class="material-symbols-outlined" id="back_to_home">
@@ -309,6 +332,13 @@
         }
 
         setInterval(checkTypingStatus, 1000);
+      });
+
+      window.addEventListener("resize", function () {
+        document.documentElement.style.setProperty(
+          "--vh",
+          window.innerHeight * 0.01 + "px"
+        );
       });
     </script>
     {% comment %} TYPING STATUS {% endcomment %} {% comment %} MESSAGE READ OR
